@@ -22,6 +22,6 @@ for finding in report.findings: echo finding.kind, " ", finding.reason, " ", fin
 - 見つけた入力は `saveInput` で保存し、`replay` でテストから毎回流す。ファジングそのものは時間をかけて別に流す。
 - 対象が落ちる・止まるとファザーも止まる。`inFlightPath` を設定すると、実行中の入力がファイルに残る。
 
-最初の成果: nim-x402 のヘッダーの読み取りが、4 バイトの入力で `IndexDefect` を上げた (標準ライブラリの `base64.decode` の、Nim 2.2.8 での問題)。
+最初の成果: nim-x402 のヘッダーの読み取りが、4 バイトの入力で `IndexDefect` を上げた (標準ライブラリの `base64.decode` の、Nim 2.2.8 までの問題。nim-lang/Nim#25530、2.2.10 で修正済み)。
 
 仕様と、守れないものは `docs/adr/ADR-FZZ-0001-in-process-fuzzing.md`。
