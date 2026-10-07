@@ -191,6 +191,7 @@ suite "keeping inputs, and running them again":
     let binary = "\x00\xff\r\n\"quote\"\x7f"
     let first = saveInput(dir, binary)
     check saveInput(dir, binary) == first
+    check first.endsWith(".input")       # ignore rules for compiler output drop names without an extension
     discard saveInput(dir, "")
     discard saveInput(dir, "plain")
     check loadCorpus(dir).sorted == @["", binary, "plain"].sorted

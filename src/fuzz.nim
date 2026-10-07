@@ -227,7 +227,9 @@ proc saveInput*(dir, input: string): string {.raises: [IOError, OSError].} =
   let stem = toHex(cast[uint64](hash(input)), 16).toLowerAscii & "-" & $input.len
   var attempt = 0
   while true:
-    result = dir / (if attempt == 0: stem else: stem & "-" & $attempt)
+    # ".input": a name with no extension is what ignore rules written for
+    # compiler output throw away.
+    result = dir / ((if attempt == 0: stem else: stem & "-" & $attempt) & ".input")
     if not fileExists(result):
       writeFile(result, input)
       return
