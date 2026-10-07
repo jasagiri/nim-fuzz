@@ -22,8 +22,14 @@ and every `# SPEC: ID` tag under `tests/**`. Do not hand-edit -- re-run
 | RPL-01 | tests/external/test_fuzz.nim (1) |
 | CRP-01 | tests/external/test_fuzz.nim (2) |
 | IFL-01 | tests/external/test_fuzz.nim (1) |
+| ISO-01 | tests/external/test_fuzz_isolated.nim (1) |
+| ISO-02 | tests/external/test_fuzz_isolated.nim (2) |
+| ISO-03 | tests/external/test_fuzz_isolated.nim (1) |
+| ISO-04 | tests/external/test_fuzz_isolated.nim (1) |
+| ISO-05 | tests/external/test_fuzz_isolated.nim (1) |
+| ISO-06 | tests/external/test_fuzz_isolated.nim (1) |
 
-Declared: 15  Covered: 15  Uncovered: 0
+Declared: 21  Covered: 21  Uncovered: 0
 
 ## Uncovered declared IDs
 

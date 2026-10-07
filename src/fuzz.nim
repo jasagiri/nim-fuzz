@@ -14,7 +14,7 @@
 ## returns takes the fuzzer with it. `inFlightPath` keeps the input being
 ## run in a file, so that it is not lost.
 
-import std/[random, monotimes, times, os, hashes, strutils, sets]
+import std/[random, monotimes, times, os, hashes, strutils, sets, osproc, strtabs, posix]
 
 when defined(fuzzCoverage):
   {.passC: "-fsanitize-coverage=trace-pc-guard".}
@@ -47,6 +47,8 @@ type
     fkRaised     ## the target raised
     fkDefect     ## the target raised a defect (an index out of range, an overflow)
     fkSlow       ## the target took longer than the limit
+    fkCrashed    ## the process running the target ended (isolated runs only)
+    fkHung       ## the target did not answer in time and was killed (isolated runs only)
 
   Finding* = object
     kind*: FindingKind
@@ -240,3 +242,171 @@ proc loadCorpus*(dir: string): seq[string] {.raises: [IOError, OSError].} =
   ## Every input saved under `dir`.
   if not dirExists(dir): raise newException(IOError, "no corpus at " & dir)
   for path in walkFiles(dir / "*"): result.add readFile(path)
+
+# ─── the target in a process of its own ─────────────────────────────────────
+#
+# A target that crashes the process or never returns takes an in-process
+# fuzzer with it. Here the program starts itself again as a child that
+# only runs the target; the parent mutates, sends each input down a pipe
+# and waits for the verdict. A child that dies or does not answer is a
+# finding, and a new child takes its place.
+
+const
+  childEnv = "NIM_FUZZ_CHILD"
+  hungMinimiseBudget = 24      # each try that still hangs costs the whole wait
+
+proc writeAll(fd: cint; data: pointer; size: int): bool =
+  var done = 0
+  while done < size:
+    let n = posix.write(fd, cast[pointer](cast[uint](data) + done.uint), size - done)
+    if n <= 0: return false
+    done += n
+  true
+
+proc readAll(fd: cint; data: pointer; size: int): bool =
+  var done = 0
+  while done < size:
+    let n = posix.read(fd, cast[pointer](cast[uint](data) + done.uint), size - done)
+    if n <= 0: return false
+    done += n
+  true
+
+proc sendFrame(fd: cint; text: string): bool =
+  var size = text.len.uint32
+  if not writeAll(fd, addr size, 4): return false
+  text.len == 0 or writeAll(fd, unsafeAddr text[0], text.len)
+
+proc receiveFrame(fd: cint; text: var string): bool =
+  var size: uint32
+  if not readAll(fd, addr size, 4): return false
+  text = newString(size.int)
+  size == 0 or readAll(fd, addr text[0], size.int)
+
+proc serveIfChild*(targets: openArray[(string, FuzzTarget)]) =
+  ## Call first thing in a program that uses `fuzzIsolated`. In the child
+  ## that `fuzzIsolated` starts, this runs the named target on every input
+  ## the parent sends and never returns; anywhere else it does nothing.
+  let name = getEnv(childEnv)
+  if name.len == 0: return
+  var target: FuzzTarget
+  for (candidate, body) in targets:
+    if candidate == name: target = body
+  if target.isNil: quit(125)        # the parent reads this as "no such target"
+  # The answers go down what was standard output; whatever the target
+  # prints must not get into them.
+  let answers = posix.dup(1)
+  discard reopen(stdout, "/dev/null", fmWrite)
+  discard reopen(stderr, "/dev/null", fmWrite)
+  fuzzResetEdges()
+  var input: string
+  while receiveFrame(0, input):
+    let before = fuzzFreshEdges()
+    let verdict = judge(target, input, FuzzConfig())
+    var head = [(if verdict.wrong: 1 + ord(verdict.kind) else: 0).uint8,
+                (if fuzzFreshEdges() > before: 1 else: 0).uint8]
+    if not writeAll(answers, addr head[0], 2) or not sendFrame(answers, verdict.reason): break
+  quit(0)
+
+type Child = object
+  process: Process
+  toChild, fromChild: cint
+
+proc start(name: string): Child {.raises: [OSError, IOError, ValueError].} =
+  var env = newStringTable()
+  for key, value in envPairs(): env[key] = value
+  env[childEnv] = name
+  result.process = startProcess(getAppFilename(), args = [], env = env, options = {})
+  result.toChild = result.process.inputHandle.cint
+  result.fromChild = result.process.outputHandle.cint
+
+proc stop(child: var Child) =
+  if child.process.isNil: return
+  child.process.kill()
+  discard child.process.waitForExit()
+  child.process.close()
+  child.process = nil
+
+proc fuzzIsolated*(targetName: string; seeds: openArray[string]; config: FuzzConfig; hangAfterMs: int): FuzzReport
+                  {.raises: [ValueError, IOError, OSError].} =
+  ## As `fuzz`, with the target `targetName` (one of those given to
+  ## `serveIfChild`) running in a process of its own. An input on which
+  ## that process ends is a finding (`fkCrashed`); one it does not answer
+  ## within `hangAfterMs` is another (`fkHung`), and the process is killed.
+  ## Slower than `fuzz`: every input crosses a pipe.
+  if config.runs < 1: raise newException(ValueError, "a fuzzing run is of at least one input")
+  if config.maxLen < 1: raise newException(ValueError, "inputs are of at least one byte at most")
+  if hangAfterMs < 1: raise newException(ValueError, "an isolated run needs a time after which a target is hung")
+  let findingsWanted = if config.maxFindings > 0: config.maxFindings else: defaultMaxFindings
+  var child = start(targetName)
+  defer: child.stop()
+
+  var freshEdges = false
+  proc verdictOf(input: string): Verdict {.raises: [ValueError, IOError, OSError].} =
+    ## Sends one input; a child that died or hung is replaced.
+    freshEdges = false
+    var answered = sendFrame(child.toChild, input)
+    if answered:
+      var waiting = TPollfd(fd: child.fromChild, events: POLLIN)
+      let ready = posix.poll(addr waiting, 1, hangAfterMs.cint)
+      if ready == 0:
+        child.stop()
+        child = start(targetName)
+        return Verdict(wrong: true, kind: fkHung, key: "hung",
+                       reason: "no answer in " & $hangAfterMs & " ms; the process was killed")
+      var head: array[2, uint8]
+      var reason: string
+      answered = readAll(child.fromChild, addr head[0], 2) and receiveFrame(child.fromChild, reason)
+      if answered:
+        freshEdges = head[1] == 1
+        if head[0] == 0: return Verdict()
+        if head[0].int - 1 > ord(high(FindingKind)): raise newException(IOError, "the child answered with a kind that is none")
+        let kind = FindingKind(head[0].int - 1)
+        return Verdict(wrong: true, kind: kind, reason: reason,
+                       key: (if kind == fkDefect: "defect " & reason.split(':')[0] else: $kind & " " & reason))
+    # The pipe closed: the process is gone.
+    let code = child.process.waitForExit()
+    child.process.close()
+    child.process = nil
+    child = start(targetName)
+    if code == 125: raise newException(ValueError, "no target named " & targetName & " was given to serveIfChild")
+    Verdict(wrong: true, kind: fkCrashed, key: "crashed " & $code,
+            reason: "the process ended with " & (if code > 128: "signal " & $(code - 128) else: "code " & $code))
+
+  var pool: seq[string]
+  for seed in seeds: pool.add (if seed.len > config.maxLen: seed[0 ..< config.maxLen] else: seed)
+  if pool.len == 0: pool.add ""
+  let seedCount = pool.len
+  var rng = initRand(config.seed)
+  var found: HashSet[string]
+  result.coverageGuided = coverageAvailable
+  for run in 0 ..< config.runs:
+    let input = if run < seedCount: pool[run] else: mutated(rng, pool[rng.rand(pool.len - 1)], pool, config)
+    let verdict = verdictOf(input)
+    let reachedNew = freshEdges
+    inc result.runs
+    if verdict.wrong:
+      if verdict.key notin found and result.findings.len < findingsWanted:
+        found.incl verdict.key
+        # Make it small, through the child: the same finding with stretches taken out.
+        var finding = Finding(kind: verdict.kind, input: input, reason: verdict.reason)
+        var tries = 0
+        let budget = if verdict.kind == fkHung: hungMinimiseBudget else: minimiseBudget
+        var size = max(1, finding.input.len div 2)
+        while size >= 1 and tries < budget:
+          var at = finding.input.len - size
+          while at >= 0 and tries < budget:
+            let candidate = finding.input[0 ..< at] & finding.input[at + size .. ^1]
+            inc tries
+            let again = verdictOf(candidate)
+            if again.wrong and again.key == verdict.key:
+              finding.input = candidate
+              at = min(at, finding.input.len - size)
+            else:
+              dec at
+          if size == 1: break
+          size = size div 2
+        result.findings.add finding
+    elif reachedNew and run >= seedCount:
+      pool.add input
+      inc result.edges       # inputs that reached new code; the child holds the map itself
+  result.corpusSize = pool.len
