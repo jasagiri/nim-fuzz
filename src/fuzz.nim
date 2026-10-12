@@ -81,6 +81,15 @@ type Verdict = object
   reason: string
   key: string        ## two findings with one key are one finding
 
+proc orSlow(verdict: Verdict; started: MonoTime; config: FuzzConfig): Verdict {.raises: [].} =
+  ## `verdict`, or, when nothing was wrong but the input took longer than
+  ## the limit since `started`, the finding that it was slow.
+  if verdict.wrong or config.slowAfterMs <= 0: return verdict
+  let took = (getMonoTime() - started).inMilliseconds
+  if took <= config.slowAfterMs: return verdict
+  Verdict(wrong: true, kind: fkSlow, key: "slow",
+          reason: "took " & $took & " ms; the limit is " & $config.slowAfterMs & " ms")
+
 proc judge(target: FuzzTarget; input: string; config: FuzzConfig): Verdict {.raises: [IOError].} =
   if config.inFlightPath.len > 0: writeFile(config.inFlightPath, input)
   let started = getMonoTime()
@@ -94,11 +103,7 @@ proc judge(target: FuzzTarget; input: string; config: FuzzConfig): Verdict {.rai
   except Defect as e:
     # Not swallowed: a defect is what the fuzzer is looking for.
     result = Verdict(wrong: true, kind: fkDefect, reason: $e.name & ": " & e.msg, key: "defect " & $e.name)
-  if not result.wrong and config.slowAfterMs > 0:
-    let took = (getMonoTime() - started).inMilliseconds
-    if took > config.slowAfterMs:
-      result = Verdict(wrong: true, kind: fkSlow, key: "slow",
-                       reason: "took " & $took & " ms; the limit is " & $config.slowAfterMs & " ms")
+  result = result.orSlow(started, config)
 
 proc minimised(input: string; verdict: Verdict; budget: int;
                judgeAgain: proc(candidate: string): Verdict {.raises: [ValueError, IOError, OSError].}): Finding
@@ -345,7 +350,7 @@ proc fuzzIsolated*(targetName: string; seeds: openArray[string]; config: FuzzCon
   defer: child.stop()
 
   var freshEdges = false
-  proc verdictOf(input: string): Verdict {.raises: [ValueError, IOError, OSError].} =
+  proc answerOf(input: string): Verdict {.raises: [ValueError, IOError, OSError].} =
     ## Sends one input; a child that died or hung is replaced.
     freshEdges = false
     var answered = sendFrame(child.toChild, input)
@@ -375,6 +380,12 @@ proc fuzzIsolated*(targetName: string; seeds: openArray[string]; config: FuzzCon
     if code == 125: raise newException(ValueError, "no target named " & targetName & " was given to serveIfChild")
     Verdict(wrong: true, kind: fkCrashed, key: "crashed " & $code,
             reason: "the process ended with " & (if code > 128: "signal " & $(code - 128) else: "code " & $code))
+
+  proc verdictOf(input: string): Verdict {.raises: [ValueError, IOError, OSError].} =
+    ## The child's answer, or that it was slow: timed here, so the trip
+    ## through the pipe counts.
+    let started = getMonoTime()
+    answerOf(input).orSlow(started, config)
 
   var pool: seq[string]
   for seed in seeds: pool.add (if seed.len > config.maxLen: seed[0 ..< config.maxLen] else: seed)

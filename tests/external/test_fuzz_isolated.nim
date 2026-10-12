@@ -1,7 +1,7 @@
 ## External tests of fuzzIsolated (ADR-FZZ-0001, ISO). Run twice by
 ## `make test`: without the coverage signal and with it.
 
-import std/[unittest, strutils, sequtils]
+import std/[unittest, os, strutils, sequtils]
 import fuzz
 
 proc clean(input: string): string {.raises: [CatchableError].} = ""
@@ -35,9 +35,14 @@ proc staged(input: string): string {.raises: [CatchableError].} =
           if input[3] == 'Z': return "reached the fault"
   ""
 
+proc sleepy(input: string): string {.raises: [CatchableError].} =
+  if input.startsWith("z"): sleep(600)
+  ""
+
 # In the child this runs the named target and never returns.
 serveIfChild({"clean": FuzzTarget(clean), "crashy": FuzzTarget(crashy), "hangy": FuzzTarget(hangy),
-              "talkative": FuzzTarget(talkative), "staged": FuzzTarget(staged)})
+              "talkative": FuzzTarget(talkative), "staged": FuzzTarget(staged),
+              "sleepy": FuzzTarget(sleepy)})
 
 proc config(runs: int; dictionary: seq[string] = @[]; maxLen = 32): FuzzConfig =
   FuzzConfig(runs: runs, seed: 0, maxLen: maxLen, dictionary: dictionary)
@@ -116,3 +121,15 @@ suite "a target in a process of its own":
     expect ValueError: discard fuzzIsolated("no such target", ["x"], config(5), hangAfterMs = 2000)
     expect ValueError: discard fuzzIsolated("clean", ["x"], config(5), hangAfterMs = 0)
     expect ValueError: discard fuzzIsolated("clean", ["x"], config(0), hangAfterMs = 2000)
+
+  # SPEC: ISO-07
+  test "Given a target that takes 600 ms on inputs beginning with z, and a limit of 300 ms, When fuzzed in a process of its own, Then the slow inputs are one finding of the kind an in-process run gives, not reduced, that says how long it took":
+    var cfg = config(6)
+    cfg.slowAfterMs = 300
+    let report = fuzzIsolated("sleepy", ["zzzz", "zz"], cfg, hangAfterMs = 5000)
+    check report.runs == 6
+    check report.findings.len == 1
+    check report.findings[0].kind == fkSlow
+    check report.findings[0].input == "zzzz"
+    check "ms; the limit is 300 ms" in report.findings[0].reason
+
