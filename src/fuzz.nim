@@ -100,20 +100,22 @@ proc judge(target: FuzzTarget; input: string; config: FuzzConfig): Verdict {.rai
       result = Verdict(wrong: true, kind: fkSlow, key: "slow",
                        reason: "took " & $took & " ms; the limit is " & $config.slowAfterMs & " ms")
 
-proc minimised(target: FuzzTarget; input: string; verdict: Verdict; config: FuzzConfig): Finding
-              {.raises: [IOError].} =
+proc minimised(input: string; verdict: Verdict; budget: int;
+               judgeAgain: proc(candidate: string): Verdict {.raises: [ValueError, IOError, OSError].}): Finding
+              {.raises: [ValueError, IOError, OSError].} =
   ## `input` with every stretch taken out that can go while the finding
-  ## stays the same finding.
+  ## stays the same finding, in at most `budget` tries. The reason is the
+  ## one the reduced input gives.
   result = Finding(kind: verdict.kind, input: input, reason: verdict.reason)
   if verdict.kind == fkSlow: return       # each try would take as long again
   var tries = 0
   var size = max(1, result.input.len div 2)
-  while size >= 1 and tries < minimiseBudget:
+  while size >= 1 and tries < budget:
     var at = result.input.len - size
-    while at >= 0 and tries < minimiseBudget:
+    while at >= 0 and tries < budget:
       let candidate = result.input[0 ..< at] & result.input[at + size .. ^1]
       inc tries
-      let again = judge(target, candidate, config)
+      let again = judgeAgain(candidate)
       if again.wrong and again.key == verdict.key:
         result.input = candidate
         result.reason = again.reason
@@ -204,7 +206,9 @@ proc fuzz*(target: FuzzTarget; seeds: openArray[string]; config: FuzzConfig): Fu
     if verdict.wrong:
       if verdict.key notin found and result.findings.len < findingsWanted:
         found.incl verdict.key
-        result.findings.add minimised(target, input, verdict, config)
+        result.findings.add minimised(input, verdict, minimiseBudget,
+          proc(candidate: string): Verdict {.raises: [ValueError, IOError, OSError].} =
+            judge(target, candidate, config))
     elif reachedNew and run >= seedCount:
       pool.add input       # it reached code no input reached before: mutate from it too
   result.edges = fuzzFreshEdges().int
@@ -387,25 +391,9 @@ proc fuzzIsolated*(targetName: string; seeds: openArray[string]; config: FuzzCon
     if verdict.wrong:
       if verdict.key notin found and result.findings.len < findingsWanted:
         found.incl verdict.key
-        # Make it small, through the child: the same finding with stretches taken out.
-        var finding = Finding(kind: verdict.kind, input: input, reason: verdict.reason)
-        var tries = 0
-        let budget = if verdict.kind == fkHung: hungMinimiseBudget else: minimiseBudget
-        var size = max(1, finding.input.len div 2)
-        while size >= 1 and tries < budget:
-          var at = finding.input.len - size
-          while at >= 0 and tries < budget:
-            let candidate = finding.input[0 ..< at] & finding.input[at + size .. ^1]
-            inc tries
-            let again = verdictOf(candidate)
-            if again.wrong and again.key == verdict.key:
-              finding.input = candidate
-              at = min(at, finding.input.len - size)
-            else:
-              dec at
-          if size == 1: break
-          size = size div 2
-        result.findings.add finding
+        # Made small through the child. A try that still hangs costs the whole wait.
+        result.findings.add minimised(input, verdict,
+          (if verdict.kind == fkHung: hungMinimiseBudget else: minimiseBudget), verdictOf)
     elif reachedNew and run >= seedCount:
       pool.add input
       inc result.edges       # inputs that reached new code; the child holds the map itself

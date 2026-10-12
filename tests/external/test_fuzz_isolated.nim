@@ -91,6 +91,15 @@ suite "a target in a process of its own":
       else: fail()
     check kinds == {fkReported, fkRaised, fkDefect}
 
+  # SPEC: ISO-04
+  test "Given a target that reads past the end of inputs beginning with L, When fuzzed from a long seed, Then the finding's reason is the one its reduced input gives, as in an in-process run":
+    let isolated = fuzzIsolated("talkative", ["Lorem"], config(100), hangAfterMs = 2000)
+    let inProcess = fuzz(talkative, ["Lorem"], config(100))
+    check isolated.findings.len == 1
+    check isolated.findings[0].input == "L"
+    check isolated.findings[0].reason == inProcess.findings[0].reason
+    check "0 .. 0" in isolated.findings[0].reason       # of "L", not of "Lorem"
+
   # SPEC: ISO-05
   test "Given a fault behind four conditions on four bytes, When fuzzed in a process of its own with the signal, Then it is found":
     when defined(fuzzCoverage):

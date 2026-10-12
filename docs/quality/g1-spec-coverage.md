@@ -25,7 +25,7 @@ and every `# SPEC: ID` tag under `tests/**`. Do not hand-edit -- re-run
 | ISO-01 | tests/external/test_fuzz_isolated.nim (1) |
 | ISO-02 | tests/external/test_fuzz_isolated.nim (2) |
 | ISO-03 | tests/external/test_fuzz_isolated.nim (1) |
-| ISO-04 | tests/external/test_fuzz_isolated.nim (1) |
+| ISO-04 | tests/external/test_fuzz_isolated.nim (2) |
 | ISO-05 | tests/external/test_fuzz_isolated.nim (1) |
 | ISO-06 | tests/external/test_fuzz_isolated.nim (1) |
 
