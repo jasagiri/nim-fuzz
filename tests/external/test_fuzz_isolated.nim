@@ -2,6 +2,7 @@
 ## `make test`: without the coverage signal and with it.
 
 import std/[unittest, os, strutils, sequtils]
+from std/posix import kill, getpid, exitnow, SIGTERM, SIGHUP, RLimit, getrlimit, setrlimit, RLIMIT_NOFILE
 import fuzz
 
 proc clean(input: string): string {.raises: [CatchableError].} = ""
@@ -39,13 +40,56 @@ proc sleepy(input: string): string {.raises: [CatchableError].} =
   if input.startsWith("z"): sleep(600)
   ""
 
+var nonEmptySeen = 0
+
+proc branchy(input: string): string {.raises: [CatchableError].} =
+  if input.len > 0: inc nonEmptySeen
+  ""
+
+proc long(input: string): string {.raises: [CatchableError].} =
+  if input.len > 8: "longer than 8 bytes: " & $input.len else: ""
+
+const wholeLen = 1_000_000
+
+proc whole(input: string): string {.raises: [CatchableError].} =
+  if input.len != wholeLen or input.count('a') != wholeLen:
+    return "got " & $input.len & " bytes, " & $input.count('a') & " of them a"
+  ""
+
+proc signals(input: string): string {.raises: [CatchableError].} =
+  if input == "T" and kill(getpid(), SIGTERM) != 0: return "could not send SIGTERM"
+  if input == "H" and kill(getpid(), SIGHUP) != 0: return "could not send SIGHUP"
+  if input == "E": exitnow(128)                 # quit clamps codes above 127
+  ""
+
+proc dies(input: string): string {.raises: [CatchableError].} =
+  quit(3)
+
+proc stuck(input: string): string {.raises: [CatchableError].} =
+  while true: discard
+
 # In the child this runs the named target and never returns.
 serveIfChild({"clean": FuzzTarget(clean), "crashy": FuzzTarget(crashy), "hangy": FuzzTarget(hangy),
               "talkative": FuzzTarget(talkative), "staged": FuzzTarget(staged),
-              "sleepy": FuzzTarget(sleepy)})
+              "sleepy": FuzzTarget(sleepy), "branchy": FuzzTarget(branchy), "long": FuzzTarget(long),
+              "whole": FuzzTarget(whole), "signals": FuzzTarget(signals), "dies": FuzzTarget(dies),
+              "stuck": FuzzTarget(stuck)})
 
 proc config(runs: int; dictionary: seq[string] = @[]; maxLen = 32): FuzzConfig =
   FuzzConfig(runs: runs, seed: 0, maxLen: maxLen, dictionary: dictionary)
+
+template withOpenFilesAtMost(limit: int; body: untyped) =
+  ## Runs `body` in a process that may hold at most `limit` files open, so
+  ## that a child whose pipes are not closed shows within a short run.
+  var saved: RLimit
+  check getrlimit(RLIMIT_NOFILE, saved) == 0
+  var lowered = saved
+  lowered.rlim_cur = limit
+  check setrlimit(RLIMIT_NOFILE, lowered) == 0
+  try:
+    body
+  finally:
+    check setrlimit(RLIMIT_NOFILE, saved) == 0
 
 suite "a target in a process of its own":
   # SPEC: ISO-01
@@ -133,3 +177,66 @@ suite "a target in a process of its own":
     check report.findings[0].input == "zzzz"
     check "ms; the limit is 300 ms" in report.findings[0].reason
 
+  # SPEC: RUN-03, ISO-06
+  test "Given one run, a greatest length of 1, or 1 ms to answer, When fuzzed in a process of its own, Then it is not refused":
+    check fuzzIsolated("clean", ["xy"], config(1, maxLen = 1), hangAfterMs = 2000).runs == 1
+    check fuzzIsolated("clean", ["x"], config(1), hangAfterMs = 1).runs == 1
+
+  # SPEC: RUN-02
+  test "Given a greatest length of 8 and a seed that is longer, When fuzzed in a process of its own, Then no input the target gets is longer":
+    let report = fuzzIsolated("long", ["a seed far longer than eight bytes"],
+                              config(200, maxLen = 8, dictionary = @["0123456789abcdef"]), hangAfterMs = 2000)
+    check report.runs == 200
+    check report.findings.len == 0
+
+  # SPEC: RUN-01
+  test "Given a seed of a million bytes, more than a pipe holds at once, When fuzzed in a process of its own, Then the target gets it whole":
+    let report = fuzzIsolated("whole", ['a'.repeat(wholeLen)], config(1, maxLen = wholeLen), hangAfterMs = 10_000)
+    check report.runs == 1
+    check report.findings.len == 0
+
+  # SPEC: ISO-05, COV-01
+  test "Given no seed and a target with a branch only a non-empty input takes, When fuzzed in a process of its own for two inputs, Then both run, and with the signal the mutated input that took the branch is kept and counted":
+    let report = fuzzIsolated("branchy", newSeq[string](), config(2), hangAfterMs = 2000)
+    check report.runs == 2
+    check report.coverageGuided == coverageAvailable
+    when defined(fuzzCoverage):
+      check report.corpusSize == 2
+      check report.edges > 0
+    else:
+      check report.corpusSize == 1
+      check report.edges == 0
+
+  # SPEC: ISO-02
+  test "Given a target that ends its process with SIGTERM, with SIGHUP, or with exit code 128, When fuzzed, Then each is a finding that names its signal or its code":
+    let report = fuzzIsolated("signals", ["T", "H", "E"], config(3), hangAfterMs = 2000)
+    let reasons = report.findings.mapIt(it.reason)
+    check report.findings.allIt(it.kind == fkCrashed)
+    check reasons.len == 3
+    check reasons.anyIt(it.endsWith("signal 15"))
+    check reasons.anyIt(it.endsWith("signal 1"))
+    check reasons.anyIt(it.endsWith("code 128"))
+
+  # SPEC: MIN-01, ISO-04
+  test "Given a long seed with boom in the middle, When fuzzed in a process of its own, Then the finding's input is exactly boom, as in an in-process run":
+    let seed = 'x'.repeat(60) & "boom" & 'y'.repeat(60)
+    let report = fuzzIsolated("talkative", [seed], config(1, maxLen = 256), hangAfterMs = 2000)
+    check report.findings.len == 1
+    check report.findings[0].reason == "holds boom"
+    check report.findings[0].input == "boom"
+
+  # SPEC: ISO-02
+  test "Given a process allowed 64 open files, When a target that ends its process on every input is fuzzed 100 times, Then every input is run":
+    withOpenFilesAtMost(64):
+      check fuzzIsolated("dies", ["x"], config(100), hangAfterMs = 2000).runs == 100
+
+  # SPEC: ISO-03
+  test "Given a process allowed 64 open files, When a target that never answers is fuzzed 30 times with 20 ms to answer, Then every input is run":
+    withOpenFilesAtMost(64):
+      check fuzzIsolated("stuck", ["x"], config(30), hangAfterMs = 20).runs == 30
+
+  # SPEC: ISO-01
+  test "Given a process allowed 64 open files, When a target with nothing wrong is fuzzed in a process of its own 30 times over, Then every run goes to its end":
+    withOpenFilesAtMost(64):
+      for _ in 0 ..< 30:
+        check fuzzIsolated("clean", ["x"], config(1), hangAfterMs = 2000).runs == 1

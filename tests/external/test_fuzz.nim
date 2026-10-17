@@ -59,6 +59,17 @@ suite "running a target":
     check inputsOf(3) == inputsOf(3)
     check inputsOf(3) != inputsOf(4)
 
+  # SPEC: RUN-03
+  test "Given one run and a greatest length of 1, When fuzzed, Then it is not refused, and the one input run is of at most one byte":
+    var seen: seq[string]
+    let report = fuzz(proc(input: string): string {.raises: [CatchableError].} =
+                        seen.add input
+                        "",
+                      ["xy"], config(1, maxLen = 1))
+    check report.runs == 1
+    check seen.len == 1
+    check seen[0].len <= 1
+
 suite "findings":
   # SPEC: FND-01
   test "Given a target that objects to inputs holding a word of the dictionary, When fuzzed, Then there is a finding with the target's reason, and its input holds the word":
@@ -118,6 +129,26 @@ suite "findings":
     check "ms" in report.findings[0].reason
     check report.findings[0].input.startsWith("z")
 
+  # SPEC: FND-01
+  test "Given a target whose reason is one letter, When fuzzed, Then that is a finding with that reason":
+    let report = fuzz(proc(input: string): string {.raises: [CatchableError].} =
+                        if input == "q": "?" else: "",
+                      ["q"], config(1))
+    check report.findings.len == 1
+    check report.findings[0].reason == "?"
+
+  # SPEC: FND-05
+  test "Given a limit of 1 ms and a target that takes 30 ms on inputs beginning with z, When fuzzed, Then the slow input is a finding":
+    var cfg = config(3)
+    cfg.slowAfterMs = 1
+    let report = fuzz(proc(input: string): string {.raises: [CatchableError].} =
+                        if input.startsWith("z"): sleep(30)
+                        "",
+                      ["z"], cfg)
+    check report.findings.len == 1
+    check report.findings[0].kind == fkSlow
+    check report.findings[0].input == "z"
+
 suite "making a finding small":
   # SPEC: MIN-01
   test "Given a target that objects to inputs holding boom, When fuzzed from long seeds, Then the finding's input is exactly boom":
@@ -135,6 +166,25 @@ suite "making a finding small":
                         "",
                       ["Lorem"], config(100))
     check report.findings[0].input == "L"
+
+  # SPEC: MIN-01
+  test "Given a target that objects to inputs of an even number of bytes, two or more, When fuzzed from abcd, Then the finding's input is of two bytes: two go together where no one byte can":
+    let report = fuzz(proc(input: string): string {.raises: [CatchableError].} =
+                        if input.len >= 2 and input.len mod 2 == 0: "even" else: "",
+                      ["abcd"], config(1))
+    check report.findings.len == 1
+    check report.findings[0].input.len == 2
+
+  # SPEC: MIN-01
+  test "Given a target with one reason for boom and another for q, When fuzzed from a seed that holds both, Then the finding stays the one for boom: a smaller input with the other reason does not take its place":
+    let report = fuzz(proc(input: string): string {.raises: [CatchableError].} =
+                        if "boom" in input: return "holds boom"
+                        if "q" in input: return "holds q"
+                        "",
+                      ["boom q"], config(1))
+    check report.findings.len == 1
+    check report.findings[0].reason == "holds boom"
+    check report.findings[0].input == "boom"
 
 suite "the coverage signal":
   # SPEC: COV-01
@@ -164,6 +214,22 @@ suite "the coverage signal":
       check report.corpusSize > 1          # the steps on the way were kept
     else:
       skip()
+
+  # SPEC: RUN-04
+  test "Given no seed and a target with a branch only a non-empty input takes, When fuzzed for two inputs, twice, Then with the signal each run keeps the mutated input that took the branch, and without it neither does":
+    var nonEmpty = 0
+    let branchy = proc(input: string): string {.raises: [CatchableError].} =
+      if input.len > 0: inc nonEmpty
+      ""
+    let first = fuzz(branchy, newSeq[string](), config(2))
+    let second = fuzz(branchy, newSeq[string](), config(2))
+    check nonEmpty == 2
+    when defined(fuzzCoverage):
+      check first.corpusSize == 2
+      check second.corpusSize == 2
+    else:
+      check first.corpusSize == 1
+      check second.corpusSize == 1
 
 suite "keeping inputs, and running them again":
   let dir = getTempDir() / "nim_fuzz_test_corpus"
@@ -222,3 +288,32 @@ suite "keeping inputs, and running them again":
     check checked == 60
     check mismatches == 0
     check not fileExists(path)
+
+  # SPEC: CRP-01
+  test "Given the file an input would be saved to already holds another input of its length, When the input is saved, Then the other is kept, the input goes under another name, and both are in the corpus":
+    removeDir(dir)
+    let taken = saveInput(dir, "mine")
+    writeFile(taken, "ours")          # as if another input had the same hash and length
+    let second = saveInput(dir, "mine")
+    check second != taken
+    check readFile(taken) == "ours"
+    check saveInput(dir, "mine") == second
+    check loadCorpus(dir).sorted == @["mine", "ours"]
+    removeDir(dir)
+
+  # SPEC: IFL-01
+  test "Given a file for the input in flight whose name is one letter, When fuzzed and when replayed, Then while the target runs the file holds the input, and afterwards it is gone":
+    let here = getCurrentDir()
+    setCurrentDir(getTempDir())
+    try:
+      removeFile("f")
+      var cfg = config(20)
+      cfg.inFlightPath = "f"
+      let watching = proc(input: string): string {.raises: [CatchableError].} =
+        if readFile("f") != input: "the file holds another input" else: ""
+      check fuzz(watching, ["one"], cfg).findings.len == 0
+      check not fileExists("f")
+      check replay(watching, ["two", "three"], cfg).len == 0
+      check not fileExists("f")
+    finally:
+      setCurrentDir(here)
