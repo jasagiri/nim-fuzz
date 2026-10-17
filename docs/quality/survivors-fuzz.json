@@ -461,16 +461,6 @@
       "reason": "上と同じ。dup(1) は 3 以上か -1 を返すので、< 0 と < 1 は同じ。"
     },
     {
-      "fingerprint": "src/fuzz.nim:LOR:fc43d2545355b007:0",
-      "file": "src/fuzz.nim",
-      "line": 314,
-      "mutator": "LOR",
-      "original": "answers < 0 or not reopen(stdout, \"/dev/null\", fmWrite) or; not reopen(stderr, \"/dev/null\", fmWrite)",
-      "replacement": "<or -> and>",
-      "class": "test_owed",
-      "reason": "2 つ目の or を and にすると、(a or b) が偽のとき標準エラーを /dev/null へ向ける reopen が評価されず、対象の標準エラーが親の読まないパイプに残る。パイプより多く書く対象は止まり fkHung になる。test_fuzz_isolated.nim の「Given a target that writes more to standard error than a pipe holds …」(ISO-04) で検出 (手で当てて 3 回とも fkHung で落ちることを確認)"
-    },
-    {
       "fingerprint": "src/fuzz.nim:ROR:4a88a704f5b6fe2c:0",
       "file": "src/fuzz.nim",
       "line": 314,
