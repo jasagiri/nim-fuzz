@@ -266,6 +266,8 @@ proc loadCorpus*(dir: string): seq[string] {.raises: [IOError, OSError].} =
 
 const
   childEnv = "NIM_FUZZ_CHILD"
+  noSuchTarget = 125           # the child's exit codes the parent reads as errors, not findings
+  outputNotSilenced = 126
   hungMinimiseBudget = 24      # each try that still hangs costs the whole wait
 
 proc writeAll(fd: cint; data: pointer; size: int): bool =
@@ -304,12 +306,14 @@ proc serveIfChild*(targets: openArray[(string, FuzzTarget)]) =
   var target: FuzzTarget
   for (candidate, body) in targets:
     if candidate == name: target = body
-  if target.isNil: quit(125)        # the parent reads this as "no such target"
+  if target.isNil: quit(noSuchTarget)
   # The answers go down what was standard output; whatever the target
-  # prints must not get into them.
+  # prints must not get into them. A child that cannot keep them apart
+  # runs no input: its answers could not be told from the target's output.
   let answers = posix.dup(1)
-  discard reopen(stdout, "/dev/null", fmWrite)
-  discard reopen(stderr, "/dev/null", fmWrite)
+  if answers < 0 or not reopen(stdout, "/dev/null", fmWrite) or
+      not reopen(stderr, "/dev/null", fmWrite):
+    quit(outputNotSilenced)
   fuzzResetEdges()
   var input: string
   while receiveFrame(0, input):
@@ -386,8 +390,10 @@ proc fuzzIsolated*(targetName: string; seeds: openArray[string]; config: FuzzCon
     child.process = nil
     child = start(targetName)
     let signalled = WIFSIGNALED(status)
-    if not signalled and WEXITSTATUS(status) == 125:
+    if not signalled and WEXITSTATUS(status) == noSuchTarget:
       raise newException(ValueError, "no target named " & targetName & " was given to serveIfChild")
+    if not signalled and WEXITSTATUS(status) == outputNotSilenced:
+      raise newException(IOError, "the child could not send the target's standard output and error to /dev/null")
     let ended = if signalled: "signal " & $WTERMSIG(status) else: "code " & $WEXITSTATUS(status)
     Verdict(wrong: true, kind: fkCrashed, key: "crashed " & ended, reason: "the process ended with " & ended)
 
