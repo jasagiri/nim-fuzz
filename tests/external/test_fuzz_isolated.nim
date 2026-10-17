@@ -74,6 +74,15 @@ proc signals(input: string): string {.raises: [CatchableError].} =
     exitnow(3)
   ""
 
+proc loud(input: string): string {.raises: [CatchableError].} =
+  ## Writes more to standard error than a pipe holds, then returns a reason.
+  try:
+    stderr.write repeat('e', 256 * 1024)
+    stderr.flushFile()
+  except IOError:
+    return "could not write to standard error: " & getCurrentExceptionMsg()
+  "said a lot"
+
 proc isAbcd(input: string): string {.raises: [CatchableError].} =
   if input != "abcd": "got " & input else: ""
 
@@ -100,7 +109,7 @@ serveIfChild({"clean": FuzzTarget(clean), "crashy": FuzzTarget(crashy), "hangy":
               "sleepy": FuzzTarget(sleepy), "branchy": FuzzTarget(branchy), "long": FuzzTarget(long),
               "whole": FuzzTarget(whole), "signals": FuzzTarget(signals), "dies": FuzzTarget(dies),
               "stuck": FuzzTarget(stuck), "isAbcd": FuzzTarget(isAbcd),
-              "startupShared": FuzzTarget(startupShared)})
+              "startupShared": FuzzTarget(startupShared), "loud": FuzzTarget(loud)})
 
 proc config(runs: int; dictionary: seq[string] = @[]; maxLen = 32): FuzzConfig =
   FuzzConfig(runs: runs, seed: 0, maxLen: maxLen, dictionary: dictionary)
@@ -166,6 +175,13 @@ suite "a target in a process of its own":
       of fkDefect: check "IndexDefect" in finding.reason
       else: fail()
     check kinds == {fkReported, fkRaised, fkDefect}
+
+  # SPEC: ISO-04
+  test "Given a target that writes more to standard error than a pipe holds and returns a reason, When fuzzed, Then the finding is that reason, as in an in-process run":
+    let report = fuzzIsolated("loud", ["x"], config(1), hangAfterMs = 2000)
+    check report.findings.len == 1
+    check report.findings[0].kind == fkReported
+    check report.findings[0].reason == "said a lot"
 
   # SPEC: ISO-04
   test "Given a target that reads past the end of inputs beginning with L, When fuzzed from a long seed, Then the finding's reason is the one its reduced input gives, as in an in-process run":
