@@ -376,14 +376,20 @@ proc fuzzIsolated*(targetName: string; seeds: openArray[string]; config: FuzzCon
         let kind = FindingKind(head[0].int - 1)
         return Verdict(wrong: true, kind: kind, reason: reason,
                        key: (if kind == fkDefect: "defect " & reason.split(':')[0] else: $kind & " " & reason))
-    # The pipe closed: the process is gone.
-    let code = child.process.waitForExit()
+    # The pipe closed: the process is gone. Its status comes from waitpid,
+    # not waitForExit: that gives 128 + the signal, which an exit code
+    # above 128 cannot be told from.
+    var status: cint
+    while posix.waitpid(Pid(child.process.processID), status, 0) < 0:
+      if errno != EINTR: raiseOSError(osLastError())
     child.process.close()
     child.process = nil
     child = start(targetName)
-    if code == 125: raise newException(ValueError, "no target named " & targetName & " was given to serveIfChild")
-    Verdict(wrong: true, kind: fkCrashed, key: "crashed " & $code,
-            reason: "the process ended with " & (if code > 128: "signal " & $(code - 128) else: "code " & $code))
+    let signalled = WIFSIGNALED(status)
+    if not signalled and WEXITSTATUS(status) == 125:
+      raise newException(ValueError, "no target named " & targetName & " was given to serveIfChild")
+    let ended = if signalled: "signal " & $WTERMSIG(status) else: "code " & $WEXITSTATUS(status)
+    Verdict(wrong: true, kind: fkCrashed, key: "crashed " & ended, reason: "the process ended with " & ended)
 
   proc verdictOf(input: string): Verdict {.raises: [ValueError, IOError, OSError].} =
     ## The child's answer, or that it was slow: timed here, so the trip
