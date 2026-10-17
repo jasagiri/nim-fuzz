@@ -321,9 +321,29 @@
       "reason": "利用者が 2026-10-17 に「仕様として定めない」と決めた。保存の名前の形を定める仕様 ID は無く、CRP-01 の「同じ入力は同じ名前」「.input で終わる」は変異後も保たれる。最初の名前に「-0」が付き、2 つ目が番号なしになる。"
     },
     {
-      "fingerprint": "src/fuzz.nim:CVR:55b74b1d9e16519f:0",
+      "fingerprint": "src/fuzz.nim:CVR:f08218db4e4af58d:0",
       "file": "src/fuzz.nim",
       "line": 269,
+      "mutator": "CVR",
+      "original": "125",
+      "replacement": "126",
+      "class": "unreached",
+      "reason": "noSuchTarget を 126 にすると outputNotSilenced と同じ値になる。対象が無いときは親が先に noSuchTarget と比べるので、今までどおり ValueError になる (ISO-06 のテストが通る)。違いが出るのは子が出力を向け直せなかったときに ValueError と述べることだけで、その分岐はテストで通らない。"
+    },
+    {
+      "fingerprint": "src/fuzz.nim:CVR:128c67fa7efc3a60:0",
+      "file": "src/fuzz.nim",
+      "line": 270,
+      "mutator": "CVR",
+      "original": "126",
+      "replacement": "127",
+      "class": "unreached",
+      "reason": "outputNotSilenced (126) は、子が dup(1) か reopen に失敗したときだけ使われる。その分岐はテストで通らない (上の行)。"
+    },
+    {
+      "fingerprint": "src/fuzz.nim:CVR:55b74b1d9e16519f:0",
+      "file": "src/fuzz.nim",
+      "line": 271,
       "mutator": "CVR",
       "original": "24",
       "replacement": "25",
@@ -333,7 +353,7 @@
     {
       "fingerprint": "src/fuzz.nim:AOR:2c0ffc8891708857:0",
       "file": "src/fuzz.nim",
-      "line": 274,
+      "line": 276,
       "mutator": "AOR",
       "original": "cast[uint](data) + done.uint",
       "replacement": "<+ -> ->",
@@ -343,7 +363,7 @@
     {
       "fingerprint": "src/fuzz.nim:AOR:922e0e5e21d84a18:0",
       "file": "src/fuzz.nim",
-      "line": 274,
+      "line": 276,
       "mutator": "AOR",
       "original": "size - done",
       "replacement": "<- -> +>",
@@ -353,7 +373,7 @@
     {
       "fingerprint": "src/fuzz.nim:BLR:129fa1758eb3c365:0",
       "file": "src/fuzz.nim",
-      "line": 275,
+      "line": 277,
       "mutator": "BLR",
       "original": "false",
       "replacement": "true",
@@ -363,7 +383,7 @@
     {
       "fingerprint": "src/fuzz.nim:ROR:fccdb2f4c1f0154b:0",
       "file": "src/fuzz.nim",
-      "line": 275,
+      "line": 277,
       "mutator": "ROR",
       "original": "n <= 0",
       "replacement": "<<= -> <>",
@@ -373,7 +393,7 @@
     {
       "fingerprint": "src/fuzz.nim:RVR:62ecf0275fa40fc5:0",
       "file": "src/fuzz.nim",
-      "line": 275,
+      "line": 277,
       "mutator": "RVR",
       "original": "return false",
       "replacement": "<return default>",
@@ -383,7 +403,7 @@
     {
       "fingerprint": "src/fuzz.nim:AOR:7e7d447d0ce98842:0",
       "file": "src/fuzz.nim",
-      "line": 282,
+      "line": 284,
       "mutator": "AOR",
       "original": "size - done",
       "replacement": "<- -> +>",
@@ -393,7 +413,7 @@
     {
       "fingerprint": "src/fuzz.nim:BLR:b7cfaa8aca5e21da:0",
       "file": "src/fuzz.nim",
-      "line": 289,
+      "line": 291,
       "mutator": "BLR",
       "original": "false",
       "replacement": "true",
@@ -403,7 +423,7 @@
     {
       "fingerprint": "src/fuzz.nim:RVR:6d558217bc5ccb7a:0",
       "file": "src/fuzz.nim",
-      "line": 289,
+      "line": 291,
       "mutator": "RVR",
       "original": "return false",
       "replacement": "<return default>",
@@ -413,7 +433,7 @@
     {
       "fingerprint": "src/fuzz.nim:BLR:fc34a2fd1ea38b6e:0",
       "file": "src/fuzz.nim",
-      "line": 294,
+      "line": 296,
       "mutator": "BLR",
       "original": "false",
       "replacement": "true",
@@ -423,7 +443,7 @@
     {
       "fingerprint": "src/fuzz.nim:RVR:cd4261debda0288e:0",
       "file": "src/fuzz.nim",
-      "line": 294,
+      "line": 296,
       "mutator": "RVR",
       "original": "return false",
       "replacement": "<return default>",
@@ -431,9 +451,49 @@
       "reason": "bool の既定値は false で、元の return false と同じ。"
     },
     {
+      "fingerprint": "src/fuzz.nim:CVR:3336a486c1e752f7:0",
+      "file": "src/fuzz.nim",
+      "line": 314,
+      "mutator": "CVR",
+      "original": "0",
+      "replacement": "1",
+      "class": "equivalent",
+      "reason": "上と同じ。dup(1) は 3 以上か -1 を返すので、< 0 と < 1 は同じ。"
+    },
+    {
+      "fingerprint": "src/fuzz.nim:LOR:fc43d2545355b007:0",
+      "file": "src/fuzz.nim",
+      "line": 314,
+      "mutator": "LOR",
+      "original": "answers < 0 or not reopen(stdout, \"/dev/null\", fmWrite) or; not reopen(stderr, \"/dev/null\", fmWrite)",
+      "replacement": "<or -> and>",
+      "class": "test_owed",
+      "reason": "2 つ目の or を and にすると、(a or b) が偽のとき標準エラーを /dev/null へ向ける reopen が評価されず、対象の標準エラーが親の読まないパイプに残る。パイプより多く書く対象は止まり fkHung になる。test_fuzz_isolated.nim の「Given a target that writes more to standard error than a pipe holds …」(ISO-04) で検出 (手で当てて 3 回とも fkHung で落ちることを確認)"
+    },
+    {
+      "fingerprint": "src/fuzz.nim:ROR:4a88a704f5b6fe2c:0",
+      "file": "src/fuzz.nim",
+      "line": 314,
+      "mutator": "ROR",
+      "original": "answers < 0",
+      "replacement": "<< -> <=>",
+      "class": "equivalent",
+      "reason": "dup(1) は空いている最小の番号を返す。子では 0・1・2 が開いている (0 は入力のパイプ) ので、成功すれば 3 以上、失敗すれば -1。0 を返すことはなく、< 0 と <= 0 は同じ。"
+    },
+    {
+      "fingerprint": "src/fuzz.nim:SDL:af281b0b0e53e002:0",
+      "file": "src/fuzz.nim",
+      "line": 316,
+      "mutator": "SDL",
+      "original": "quit(outputNotSilenced)",
+      "replacement": "discard",
+      "class": "unreached",
+      "reason": "dup(1) か reopen が失敗したときだけ通る。失敗させる手段は公開 API の入力に無い (ファイル記述子を使い切らせるなど、プロセスの環境で作るしかない)。"
+    },
+    {
       "fingerprint": "src/fuzz.nim:CVR:e220898289241181:0",
       "file": "src/fuzz.nim",
-      "line": 321,
+      "line": 325,
       "mutator": "CVR",
       "original": "0",
       "replacement": "1",
@@ -443,7 +503,7 @@
     {
       "fingerprint": "src/fuzz.nim:SDL:83f6a8310bb2b6bc:0",
       "file": "src/fuzz.nim",
-      "line": 321,
+      "line": 325,
       "mutator": "SDL",
       "original": "quit(0)",
       "replacement": "discard",
@@ -453,7 +513,7 @@
     {
       "fingerprint": "src/fuzz.nim:CVR:2f3c2259f38858b4:1",
       "file": "src/fuzz.nim",
-      "line": 352,
+      "line": 356,
       "mutator": "CVR",
       "original": "0",
       "replacement": "1",
@@ -463,7 +523,7 @@
     {
       "fingerprint": "src/fuzz.nim:BLR:97d995e76cdb7592:0",
       "file": "src/fuzz.nim",
-      "line": 356,
+      "line": 360,
       "mutator": "BLR",
       "original": "false",
       "replacement": "true",
@@ -473,7 +533,7 @@
     {
       "fingerprint": "src/fuzz.nim:BLR:07a13ac17d724b8a:0",
       "file": "src/fuzz.nim",
-      "line": 359,
+      "line": 363,
       "mutator": "BLR",
       "original": "false",
       "replacement": "true",
@@ -483,7 +543,7 @@
     {
       "fingerprint": "src/fuzz.nim:CVR:1a7a227f7633a40d:0",
       "file": "src/fuzz.nim",
-      "line": 363,
+      "line": 367,
       "mutator": "CVR",
       "original": "1",
       "replacement": "2",
@@ -493,7 +553,7 @@
     {
       "fingerprint": "src/fuzz.nim:CVR:c818384eaa40e27d:0",
       "file": "src/fuzz.nim",
-      "line": 369,
+      "line": 373,
       "mutator": "CVR",
       "original": "2",
       "replacement": "3",
@@ -503,7 +563,7 @@
     {
       "fingerprint": "src/fuzz.nim:RVR:c29f5d9cce8aea65:0",
       "file": "src/fuzz.nim",
-      "line": 374,
+      "line": 378,
       "mutator": "RVR",
       "original": "return Verdict()",
       "replacement": "<return default>",
@@ -513,7 +573,7 @@
     {
       "fingerprint": "src/fuzz.nim:AOR:2b665d5283e9b852:0",
       "file": "src/fuzz.nim",
-      "line": 375,
+      "line": 379,
       "mutator": "AOR",
       "original": "head[0].int - 1",
       "replacement": "<- -> +>",
@@ -523,7 +583,7 @@
     {
       "fingerprint": "src/fuzz.nim:CVR:9a1270dca2a07f17:0",
       "file": "src/fuzz.nim",
-      "line": 375,
+      "line": 379,
       "mutator": "CVR",
       "original": "0",
       "replacement": "1",
@@ -533,7 +593,7 @@
     {
       "fingerprint": "src/fuzz.nim:CVR:dca7616fe7963c3f:0",
       "file": "src/fuzz.nim",
-      "line": 375,
+      "line": 379,
       "mutator": "CVR",
       "original": "1",
       "replacement": "2",
@@ -543,7 +603,7 @@
     {
       "fingerprint": "src/fuzz.nim:ROR:d4696140b990e0ce:0",
       "file": "src/fuzz.nim",
-      "line": 375,
+      "line": 379,
       "mutator": "ROR",
       "original": "head[0].int - 1 > ord(high(FindingKind))",
       "replacement": "<> -> >=>",
@@ -553,7 +613,7 @@
     {
       "fingerprint": "src/fuzz.nim:CVR:a7d9fb0e091bdb2b:1",
       "file": "src/fuzz.nim",
-      "line": 383,
+      "line": 387,
       "mutator": "CVR",
       "original": "0",
       "replacement": "1",
@@ -563,7 +623,7 @@
     {
       "fingerprint": "src/fuzz.nim:ROR:8fd61ee5848d808b:0",
       "file": "src/fuzz.nim",
-      "line": 383,
+      "line": 387,
       "mutator": "ROR",
       "original": "posix.waitpid(Pid(child.process.processID), status, 0) < 0",
       "replacement": "<< -> <=>",
@@ -573,7 +633,7 @@
     {
       "fingerprint": "src/fuzz.nim:ROR:4546c11e609ee7dd:0",
       "file": "src/fuzz.nim",
-      "line": 384,
+      "line": 388,
       "mutator": "ROR",
       "original": "errno != EINTR",
       "replacement": "<!= -> ==>",
@@ -583,7 +643,7 @@
     {
       "fingerprint": "src/fuzz.nim:SDL:0d2a76050e62ed8e:0",
       "file": "src/fuzz.nim",
-      "line": 384,
+      "line": 388,
       "mutator": "SDL",
       "original": "raiseOSError(osLastError())",
       "replacement": "discard",
@@ -593,7 +653,7 @@
     {
       "fingerprint": "src/fuzz.nim:ROR:c4c7c0355b237546:1",
       "file": "src/fuzz.nim",
-      "line": 401,
+      "line": 407,
       "mutator": "ROR",
       "original": "seed.len > config.maxLen",
       "replacement": "<> -> >=>",
@@ -603,7 +663,7 @@
     {
       "fingerprint": "src/fuzz.nim:ROR:b73c1cc56b2410ad:1",
       "file": "src/fuzz.nim",
-      "line": 413,
+      "line": 419,
       "mutator": "ROR",
       "original": "result.findings.len < findingsWanted",
       "replacement": "<< -> <=>",
