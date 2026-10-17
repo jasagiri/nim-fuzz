@@ -7,8 +7,8 @@
       "mutator": "CVR",
       "original": "20",
       "replacement": "21",
-      "class": "spec_question",
-      "reason": "既定の発見の上限 20 が 21 になる。maxFindings (発見をいくつで止めるか、0 なら 20) はフィールドの doc comment にだけあり、仕様 ID が無い。maxFindings の振る舞いを仕様に足すか、定めないか。"
+      "class": "accepted",
+      "reason": "利用者が 2026-10-17 に「仕様として定めない」と決めた。maxFindings (発見をいくつで止めるか、0 なら 20) を定める仕様 ID は無い。既定の上限 20 が 21 になる。"
     },
     {
       "fingerprint": "src/fuzz.nim:CVR:d6e7af35acf2f0d2:0",
@@ -17,8 +17,8 @@
       "mutator": "CVR",
       "original": "2000",
       "replacement": "2001",
-      "class": "spec_question",
-      "reason": "最小化の試行の上限 2000 が 2001 になる。MIN-01 は上限なしに「除けるだけ除く」と述べ、試行の上限 (プロセス内 2000、hung 24) を述べていない。上限を仕様に書くか、定めないか。"
+      "class": "accepted",
+      "reason": "利用者が 2026-10-17 に「仕様として定めない」と決めた。最小化の試行の上限 (プロセス内 2000、hung 24) を定める仕様 ID は無い (MIN-01 は上限があることだけを述べる)。上限 2000 が 2001 になる。"
     },
     {
       "fingerprint": "src/fuzz.nim:ROR:a090f3de06cf9d21:0",
@@ -27,8 +27,8 @@
       "mutator": "ROR",
       "original": "took <= config.slowAfterMs",
       "replacement": "<<= -> <>",
-      "class": "spec_question",
-      "reason": "かかった時間がちょうど slowAfterMs ミリ秒のときだけ違う (元は発見にしない、変異後は発見)。FND-05 は「より長く」と述べ、元が仕様どおり。時計で測るので、ちょうどの時間をテストで決定的に作れない。この生き残りを受け入れる (accepted) か、利用者の判断が要る。"
+      "class": "accepted",
+      "reason": "利用者が 2026-10-17 に受け入れると決めた。かかった時間がちょうど slowAfterMs ミリ秒のときだけ違い (FND-05 の「より長く」は元が満たす)、時計で測るのでテストで決定的に作れない。"
     },
     {
       "fingerprint": "src/fuzz.nim:RVR:8d19dfbea5c3ba59:0",
@@ -47,8 +47,8 @@
       "mutator": "CVR",
       "original": "0",
       "replacement": "1",
-      "class": "spec_question",
-      "reason": "試行の数え始めが 1 になり、上限に 1 回早く届く。MIN-01 は上限なしに「除けるだけ除く」と述べ、試行の上限 (プロセス内 2000、hung 24) を述べていない。上限を仕様に書くか、定めないか。"
+      "class": "accepted",
+      "reason": "利用者が 2026-10-17 に「仕様として定めない」と決めた。最小化の試行の上限 (プロセス内 2000、hung 24) を定める仕様 ID は無い (MIN-01 は上限があることだけを述べる)。試行の数え始めが 1 になり、上限に 1 回早く届く。"
     },
     {
       "fingerprint": "src/fuzz.nim:CVR:447180f3a3a8a597:0",
@@ -57,8 +57,8 @@
       "mutator": "CVR",
       "original": "1",
       "replacement": "2",
-      "class": "spec_question",
-      "reason": "最初に除く幅が、長さ 2〜3 の入力でも 2 になる。結果が変わるのは、2 バイトまとめて除くと同じ発見のままで、1 バイトでは変わる入力 (例: 長さが 1 でない入力に理由を返す対象と seed \"ab\": 元は \"ab\"、変異後は \"\")。このときは変異後の方が小さい。MIN-01 の「除けるだけ除く」は、1 バイトずつ除いてもう縮まないこと (1-minimal) を言うのか、どの部分を除いても縮まないことを言うのか。後者なら元の実装が仕様を満たさない入力がある。"
+      "class": "accepted",
+      "reason": "利用者が 2026-10-17 に、MIN-01 の「除けるだけ除く」を 1-minimal (どの 1 バイトを除いても同じ発見でなくなる) の意味と決め、どの 1-minimal な入力になるかは定めないとした。変異は最初に除く幅を変えるだけで、修正後の最小化 (1 バイトずつの輪を、何も除けなくなるまで繰り返す) は最初の幅によらず 1-minimal な入力を返す。変異を当てて MIN-01 のテスト (両方のテストファイル) が通ることを手で確かめた。"
     },
     {
       "fingerprint": "src/fuzz.nim:LOR:825b07510029570b:0",
@@ -87,8 +87,8 @@
       "mutator": "ROR",
       "original": "tries < budget",
       "replacement": "<< -> <=>",
-      "class": "spec_question",
-      "reason": "試行が上限より 1 回多くなる。MIN-01 は上限なしに「除けるだけ除く」と述べ、試行の上限 (プロセス内 2000、hung 24) を述べていない。上限を仕様に書くか、定めないか。"
+      "class": "accepted",
+      "reason": "利用者が 2026-10-17 に「仕様として定めない」と決めた。最小化の試行の上限 (プロセス内 2000、hung 24) を定める仕様 ID は無い (MIN-01 は上限があることだけを述べる)。試行が上限より 1 回多くなる。"
     },
     {
       "fingerprint": "src/fuzz.nim:SDL:fd90c1e2e779c7f0:0",
@@ -97,8 +97,8 @@
       "mutator": "SDL",
       "original": "inc tries",
       "replacement": "discard",
-      "class": "spec_question",
-      "reason": "試行の上限が効かなくなる (輪は、入力が縮むか at が減るので上限なしでも終わる)。MIN-01 は上限なしに「除けるだけ除く」と述べ、試行の上限 (プロセス内 2000、hung 24) を述べていない。上限を仕様に書くか、定めないか。"
+      "class": "accepted",
+      "reason": "利用者が 2026-10-17 に「仕様として定めない」と決めた。最小化の試行の上限 (プロセス内 2000、hung 24) を定める仕様 ID は無い (MIN-01 は上限があることだけを述べる)。上限が効かなくなる (輪は入力が縮むか at が減るので上限なしでも終わる)。"
     },
     {
       "fingerprint": "src/fuzz.nim:CVR:b23e0e9dd5a5f72e:0",
@@ -107,8 +107,8 @@
       "mutator": "CVR",
       "original": "1",
       "replacement": "2",
-      "class": "spec_question",
-      "reason": "変異の種類を選ぶ幅が 1 狭くなり、辞書が無いと「端の数への差し替え」、辞書があると「辞書の語の上書き」が選ばれなくなる。どの仕様 ID も変異の作り方 (種類・幅・選ぶ確率) を定めていない (RUN-04 は同じ種が同じ列を作ることだけを述べ、変異後も同じ種は同じ列を作る)。変異の作り方を仕様に書くか、定めないか。"
+      "class": "accepted",
+      "reason": "利用者が 2026-10-17 に「仕様として定めない」と決めた。変異の作り方 (種類・幅・確率) を定める仕様 ID は無い (RUN-04 は同じ種が同じ列を作ることだけを述べ、変異後も保たれる)。種類を選ぶ幅が 1 狭くなる。"
     },
     {
       "fingerprint": "src/fuzz.nim:CVR:70ac92b2a45fdb8e:0",
@@ -117,8 +117,8 @@
       "mutator": "CVR",
       "original": "7",
       "replacement": "8",
-      "class": "spec_question",
-      "reason": "「一続きを除く」の長さの上限が 8 バイトから 9 バイトになる。どの仕様 ID も変異の作り方 (種類・幅・選ぶ確率) を定めていない (RUN-04 は同じ種が同じ列を作ることだけを述べ、変異後も同じ種は同じ列を作る)。変異の作り方を仕様に書くか、定めないか。"
+      "class": "accepted",
+      "reason": "利用者が 2026-10-17 に「仕様として定めない」と決めた。変異の作り方 (種類・幅・確率) を定める仕様 ID は無い (RUN-04 は同じ種が同じ列を作ることだけを述べ、変異後も保たれる)。「一続きを除く」の長さの上限が 1 増える。"
     },
     {
       "fingerprint": "src/fuzz.nim:CVR:02829cbd3deb4933:0",
@@ -127,8 +127,8 @@
       "mutator": "CVR",
       "original": "1",
       "replacement": "2",
-      "class": "spec_question",
-      "reason": "「一続きを繰り返す」で末尾の 1 バイトが対象から外れる。どの仕様 ID も変異の作り方 (種類・幅・選ぶ確率) を定めていない (RUN-04 は同じ種が同じ列を作ることだけを述べ、変異後も同じ種は同じ列を作る)。変異の作り方を仕様に書くか、定めないか。"
+      "class": "accepted",
+      "reason": "利用者が 2026-10-17 に「仕様として定めない」と決めた。変異の作り方 (種類・幅・確率) を定める仕様 ID は無い (RUN-04 は同じ種が同じ列を作ることだけを述べ、変異後も保たれる)。「一続きを繰り返す」で末尾の 1 バイトが外れる。"
     },
     {
       "fingerprint": "src/fuzz.nim:LBR:e0571502e7791cdc:0",
@@ -137,8 +137,8 @@
       "mutator": "LBR",
       "original": "at .. min(result.len - 1, at + rng.rand(15))",
       "replacement": "<.. -> ..<>",
-      "class": "spec_question",
-      "reason": "「一続きを繰り返す」の長さが 1 バイト短くなる (空になることもある)。どの仕様 ID も変異の作り方 (種類・幅・選ぶ確率) を定めていない (RUN-04 は同じ種が同じ列を作ることだけを述べ、変異後も同じ種は同じ列を作る)。変異の作り方を仕様に書くか、定めないか。"
+      "class": "accepted",
+      "reason": "利用者が 2026-10-17 に「仕様として定めない」と決めた。変異の作り方 (種類・幅・確率) を定める仕様 ID は無い (RUN-04 は同じ種が同じ列を作ることだけを述べ、変異後も保たれる)。「一続きを繰り返す」が 1 バイト短くなる。"
     },
     {
       "fingerprint": "src/fuzz.nim:CVR:9b78c73165285290:0",
@@ -147,8 +147,8 @@
       "mutator": "CVR",
       "original": "0",
       "replacement": "1",
-      "class": "spec_question",
-      "reason": "数字の並びが先頭のバイトから始まるとき、差し替えずに数を挿入する。どの仕様 ID も変異の作り方 (種類・幅・選ぶ確率) を定めていない (RUN-04 は同じ種が同じ列を作ることだけを述べ、変異後も同じ種は同じ列を作る)。変異の作り方を仕様に書くか、定めないか。"
+      "class": "accepted",
+      "reason": "利用者が 2026-10-17 に「仕様として定めない」と決めた。変異の作り方 (種類・幅・確率) を定める仕様 ID は無い (RUN-04 は同じ種が同じ列を作ることだけを述べ、変異後も保たれる)。先頭から始まる数字の並びを差し替えず挿入する。"
     },
     {
       "fingerprint": "src/fuzz.nim:ROR:8cd7813d2de90bbd:0",
@@ -157,8 +157,8 @@
       "mutator": "ROR",
       "original": "first < 0",
       "replacement": "<< -> <=>",
-      "class": "spec_question",
-      "reason": "数字の並びが先頭のバイトから始まるとき、差し替えずに数を挿入する。どの仕様 ID も変異の作り方 (種類・幅・選ぶ確率) を定めていない (RUN-04 は同じ種が同じ列を作ることだけを述べ、変異後も同じ種は同じ列を作る)。変異の作り方を仕様に書くか、定めないか。"
+      "class": "accepted",
+      "reason": "利用者が 2026-10-17 に「仕様として定めない」と決めた。変異の作り方 (種類・幅・確率) を定める仕様 ID は無い (RUN-04 は同じ種が同じ列を作ることだけを述べ、変異後も保たれる)。先頭から始まる数字の並びを差し替えず挿入する。"
     },
     {
       "fingerprint": "src/fuzz.nim:CVR:bd999b11f19e1b78:0",
@@ -167,8 +167,8 @@
       "mutator": "CVR",
       "original": "1",
       "replacement": "2",
-      "class": "spec_question",
-      "reason": "数字の並びの終わりを 1 つ手前で止め、末尾まで続く並びの最後の数字が残る。どの仕様 ID も変異の作り方 (種類・幅・選ぶ確率) を定めていない (RUN-04 は同じ種が同じ列を作ることだけを述べ、変異後も同じ種は同じ列を作る)。変異の作り方を仕様に書くか、定めないか。"
+      "class": "accepted",
+      "reason": "利用者が 2026-10-17 に「仕様として定めない」と決めた。変異の作り方 (種類・幅・確率) を定める仕様 ID は無い (RUN-04 は同じ種が同じ列を作ることだけを述べ、変異後も保たれる)。数字の並びの終わりを 1 つ手前で止める。"
     },
     {
       "fingerprint": "src/fuzz.nim:LBR:0902b360f4ef6ed6:0",
@@ -177,8 +177,8 @@
       "mutator": "LBR",
       "original": "0 ..< first",
       "replacement": "<..< -> ..>",
-      "class": "spec_question",
-      "reason": "差し替えのとき、並びの最初の数字が数の前に残る。どの仕様 ID も変異の作り方 (種類・幅・選ぶ確率) を定めていない (RUN-04 は同じ種が同じ列を作ることだけを述べ、変異後も同じ種は同じ列を作る)。変異の作り方を仕様に書くか、定めないか。"
+      "class": "accepted",
+      "reason": "利用者が 2026-10-17 に「仕様として定めない」と決めた。変異の作り方 (種類・幅・確率) を定める仕様 ID は無い (RUN-04 は同じ種が同じ列を作ることだけを述べ、変異後も保たれる)。差し替えで並びの最初の数字が残る。"
     },
     {
       "fingerprint": "src/fuzz.nim:CVR:da49264911473160:0",
@@ -187,8 +187,8 @@
       "mutator": "CVR",
       "original": "9",
       "replacement": "10",
-      "class": "spec_question",
-      "reason": "辞書の語の「挿入」と「上書き」が、選ばれる番号で入れ替わる (どちらも 1/11)。どの仕様 ID も変異の作り方 (種類・幅・選ぶ確率) を定めていない (RUN-04 は同じ種が同じ列を作ることだけを述べ、変異後も同じ種は同じ列を作る)。変異の作り方を仕様に書くか、定めないか。"
+      "class": "accepted",
+      "reason": "利用者が 2026-10-17 に「仕様として定めない」と決めた。変異の作り方 (種類・幅・確率) を定める仕様 ID は無い (RUN-04 は同じ種が同じ列を作ることだけを述べ、変異後も保たれる)。辞書の語の挿入と上書きが入れ替わる。"
     },
     {
       "fingerprint": "src/fuzz.nim:CVR:b98b60f57a066718:0",
@@ -197,8 +197,8 @@
       "mutator": "CVR",
       "original": "1",
       "replacement": "2",
-      "class": "spec_question",
-      "reason": "辞書の語で上書きしたあとの残りから末尾の 1 バイトが落ちる (^1 → ^2)。どの仕様 ID も変異の作り方 (種類・幅・選ぶ確率) を定めていない (RUN-04 は同じ種が同じ列を作ることだけを述べ、変異後も同じ種は同じ列を作る)。変異の作り方を仕様に書くか、定めないか。"
+      "class": "accepted",
+      "reason": "利用者が 2026-10-17 に「仕様として定めない」と決めた。変異の作り方 (種類・幅・確率) を定める仕様 ID は無い (RUN-04 は同じ種が同じ列を作ることだけを述べ、変異後も保たれる)。上書きのあとの残りから末尾の 1 バイトが落ちる (^1 → ^2)。"
     },
     {
       "fingerprint": "src/fuzz.nim:LBR:ec9e71e3641e3346:0",
@@ -207,8 +207,8 @@
       "mutator": "LBR",
       "original": "at + word.len .. ^1",
       "replacement": "<.. -> ..<>",
-      "class": "spec_question",
-      "reason": "辞書の語で上書きしたあとの残りから末尾の 1 バイトが落ちる。どの仕様 ID も変異の作り方 (種類・幅・選ぶ確率) を定めていない (RUN-04 は同じ種が同じ列を作ることだけを述べ、変異後も同じ種は同じ列を作る)。変異の作り方を仕様に書くか、定めないか。"
+      "class": "accepted",
+      "reason": "利用者が 2026-10-17 に「仕様として定めない」と決めた。変異の作り方 (種類・幅・確率) を定める仕様 ID は無い (RUN-04 は同じ種が同じ列を作ることだけを述べ、変異後も保たれる)。上書きのあとの残りから末尾の 1 バイトが落ちる。"
     },
     {
       "fingerprint": "src/fuzz.nim:ROR:afcdcde9c32e1617:0",
@@ -237,8 +237,8 @@
       "mutator": "CVR",
       "original": "0",
       "replacement": "1",
-      "class": "spec_question",
-      "reason": "maxFindings = 1 が「既定 (20)」と同じ扱いになる。maxFindings (発見をいくつで止めるか、0 なら 20) はフィールドの doc comment にだけあり、仕様 ID が無い。maxFindings の振る舞いを仕様に足すか、定めないか。"
+      "class": "accepted",
+      "reason": "利用者が 2026-10-17 に「仕様として定めない」と決めた。maxFindings (発見をいくつで止めるか、0 なら 20) を定める仕様 ID は無い。maxFindings = 1 が既定と同じ扱いになる。"
     },
     {
       "fingerprint": "src/fuzz.nim:CVR:33b5b73c967c816b:0",
@@ -247,8 +247,8 @@
       "mutator": "CVR",
       "original": "0",
       "replacement": "1",
-      "class": "spec_question",
-      "reason": "長すぎる種が、先頭の maxLen バイトでなく 2 バイト目からの maxLen - 1 バイトに切られる。RUN-02 は長さが maxLen を超えないことだけを述べ、長すぎる種を切ったあとの中身を述べていない。「先頭の maxLen バイトを残す」を仕様に足すか、定めないか。"
+      "class": "test_owed",
+      "reason": "RUN-02 (2026-10-17 に「先頭の maxLen バイトを残す」を追加): 「Given a greatest length of 4 and a seed of ten bytes, When fuzzed …」で検出 (変異を手で当てて落ちることを確認)"
     },
     {
       "fingerprint": "src/fuzz.nim:ROR:c4c7c0355b237546:0",
@@ -277,8 +277,8 @@
       "mutator": "ROR",
       "original": "result.findings.len < findingsWanted",
       "replacement": "<< -> <=>",
-      "class": "spec_question",
-      "reason": "発見が上限より 1 つ多く残る。maxFindings (発見をいくつで止めるか、0 なら 20) はフィールドの doc comment にだけあり、仕様 ID が無い。maxFindings の振る舞いを仕様に足すか、定めないか。"
+      "class": "accepted",
+      "reason": "利用者が 2026-10-17 に「仕様として定めない」と決めた。maxFindings (発見をいくつで止めるか、0 なら 20) を定める仕様 ID は無い。発見が上限より 1 つ多く残る。"
     },
     {
       "fingerprint": "src/fuzz.nim:ROR:435a2dc1dc95aba4:1",
@@ -297,8 +297,8 @@
       "mutator": "CVR",
       "original": "16",
       "replacement": "17",
-      "class": "spec_question",
-      "reason": "名前の 16 進の桁が 17 桁 (先頭に 0) になる。CRP-01 は「同じ入力は同じ名前」「.input で終わる」だけを述べ、変異後もこの 2 つは保たれる (名前の形だけが変わる)。名前の形 (16 桁の 16 進 - 長さ [- 番号] .input) を仕様に書くか、定めないか。"
+      "class": "accepted",
+      "reason": "利用者が 2026-10-17 に「仕様として定めない」と決めた。保存の名前の形を定める仕様 ID は無く、CRP-01 の「同じ入力は同じ名前」「.input で終わる」は変異後も保たれる。16 進の桁が 17 桁になる。"
     },
     {
       "fingerprint": "src/fuzz.nim:CVR:3f17b8c436fe7ecb:0",
@@ -307,8 +307,8 @@
       "mutator": "CVR",
       "original": "0",
       "replacement": "1",
-      "class": "spec_question",
-      "reason": "最初の名前から「-1」が付く。CRP-01 は「同じ入力は同じ名前」「.input で終わる」だけを述べ、変異後もこの 2 つは保たれる (名前の形だけが変わる)。名前の形 (16 桁の 16 進 - 長さ [- 番号] .input) を仕様に書くか、定めないか。"
+      "class": "accepted",
+      "reason": "利用者が 2026-10-17 に「仕様として定めない」と決めた。保存の名前の形を定める仕様 ID は無く、CRP-01 の「同じ入力は同じ名前」「.input で終わる」は変異後も保たれる。最初の名前から「-1」が付く。"
     },
     {
       "fingerprint": "src/fuzz.nim:CVR:66108803644e4a7b:0",
@@ -317,8 +317,8 @@
       "mutator": "CVR",
       "original": "0",
       "replacement": "1",
-      "class": "spec_question",
-      "reason": "最初の名前に「-0」が付き、2 つ目が番号なしになる。CRP-01 は「同じ入力は同じ名前」「.input で終わる」だけを述べ、変異後もこの 2 つは保たれる (名前の形だけが変わる)。名前の形 (16 桁の 16 進 - 長さ [- 番号] .input) を仕様に書くか、定めないか。"
+      "class": "accepted",
+      "reason": "利用者が 2026-10-17 に「仕様として定めない」と決めた。保存の名前の形を定める仕様 ID は無く、CRP-01 の「同じ入力は同じ名前」「.input で終わる」は変異後も保たれる。最初の名前に「-0」が付き、2 つ目が番号なしになる。"
     },
     {
       "fingerprint": "src/fuzz.nim:ROR:09d3a7d33aa4dc08:0",
@@ -327,8 +327,8 @@
       "mutator": "ROR",
       "original": "attempt == 0",
       "replacement": "<== -> !=>",
-      "class": "spec_question",
-      "reason": "最初の名前に「-0」が付き、2 つ目が番号なしになる。CRP-01 は「同じ入力は同じ名前」「.input で終わる」だけを述べ、変異後もこの 2 つは保たれる (名前の形だけが変わる)。名前の形 (16 桁の 16 進 - 長さ [- 番号] .input) を仕様に書くか、定めないか。"
+      "class": "accepted",
+      "reason": "利用者が 2026-10-17 に「仕様として定めない」と決めた。保存の名前の形を定める仕様 ID は無く、CRP-01 の「同じ入力は同じ名前」「.input で終わる」は変異後も保たれる。最初の名前に「-0」が付き、2 つ目が番号なしになる。"
     },
     {
       "fingerprint": "src/fuzz.nim:CVR:55b74b1d9e16519f:0",
@@ -337,8 +337,8 @@
       "mutator": "CVR",
       "original": "24",
       "replacement": "25",
-      "class": "spec_question",
-      "reason": "hung の発見の最小化の上限 24 が 25 になる。MIN-01 は上限なしに「除けるだけ除く」と述べ、試行の上限 (プロセス内 2000、hung 24) を述べていない。上限を仕様に書くか、定めないか。"
+      "class": "accepted",
+      "reason": "利用者が 2026-10-17 に「仕様として定めない」と決めた。最小化の試行の上限 (プロセス内 2000、hung 24) を定める仕様 ID は無い (MIN-01 は上限があることだけを述べる)。hung の上限 24 が 25 になる。"
     },
     {
       "fingerprint": "src/fuzz.nim:AOR:2c0ffc8891708857:0",
@@ -447,8 +447,8 @@
       "mutator": "SDL",
       "original": "fuzzResetEdges()",
       "replacement": "discard",
-      "class": "spec_question",
-      "reason": "子が起動してから serveIfChild に入るまでに通った辺 (モジュールの初期化など) が、どの入力も通っていないのに「既に通った」と数えられ、入力がその辺を通っても残らない。ISO-05 も README も「新しい辺」が何に対して新しいかを述べていない。「どの入力もまだ通っていない辺」と定めるか (定めるなら、起動時に通る辺を対象も通る E テストを足す)、定めないか。"
+      "class": "test_owed",
+      "reason": "ISO-08 (2026-10-17 に追加): 「Given a target whose only branch for a non-empty input the program also ran before serveIfChild …」で検出 (-d:fuzzCoverage の版で、変異を手で当てて落ちることを確認)"
     },
     {
       "fingerprint": "src/fuzz.nim:CVR:e220898289241181:0",
@@ -477,8 +477,8 @@
       "mutator": "CVR",
       "original": "0",
       "replacement": "1",
-      "class": "spec_question",
-      "reason": "fuzzIsolated で maxFindings = 1 が既定 (20) と同じ扱いになる。maxFindings (発見をいくつで止めるか、0 なら 20) はフィールドの doc comment にだけあり、仕様 ID が無い。maxFindings の振る舞いを仕様に足すか、定めないか。"
+      "class": "accepted",
+      "reason": "利用者が 2026-10-17 に「仕様として定めない」と決めた。maxFindings (発見をいくつで止めるか、0 なら 20) を定める仕様 ID は無い。fuzzIsolated で maxFindings = 1 が既定と同じ扱いになる。"
     },
     {
       "fingerprint": "src/fuzz.nim:BLR:97d995e76cdb7592:0",
@@ -507,8 +507,8 @@
       "mutator": "CVR",
       "original": "1",
       "replacement": "2",
-      "class": "spec_question",
-      "reason": "poll に pollfd を 1 つしか渡さないのに数を 2 にし、スタックの隣の値を 2 つ目の pollfd として読ませる (未定義の動作)。隣の値によって hung の判定が壊れ得るが、テストでその値を決められない。この生き残りを受け入れる (accepted) か、利用者の判断が要る。"
+      "class": "accepted",
+      "reason": "利用者が 2026-10-17 に受け入れると決めた。poll の数を 2 にしてスタックの隣を 2 つ目の pollfd として読ませる未定義の動作で、その値をテストで決められない。"
     },
     {
       "fingerprint": "src/fuzz.nim:CVR:c818384eaa40e27d:0",
@@ -577,8 +577,8 @@
       "mutator": "CVR",
       "original": "0",
       "replacement": "1",
-      "class": "spec_question",
-      "reason": "fuzzIsolated で、長すぎる種が 2 バイト目からの maxLen - 1 バイトに切られる。RUN-02 は長さが maxLen を超えないことだけを述べ、長すぎる種を切ったあとの中身を述べていない。「先頭の maxLen バイトを残す」を仕様に足すか、定めないか。"
+      "class": "test_owed",
+      "reason": "RUN-02 (2026-10-17 に追加): 「Given a greatest length of 4 and a seed of ten bytes, When fuzzed in a process of its own …」で検出 (変異を手で当てて落ちることを確認)"
     },
     {
       "fingerprint": "src/fuzz.nim:ROR:c4c7c0355b237546:1",
@@ -597,8 +597,8 @@
       "mutator": "ROR",
       "original": "result.findings.len < findingsWanted",
       "replacement": "<< -> <=>",
-      "class": "spec_question",
-      "reason": "fuzzIsolated で発見が上限より 1 つ多く残る。maxFindings (発見をいくつで止めるか、0 なら 20) はフィールドの doc comment にだけあり、仕様 ID が無い。maxFindings の振る舞いを仕様に足すか、定めないか。"
+      "class": "accepted",
+      "reason": "利用者が 2026-10-17 に「仕様として定めない」と決めた。maxFindings (発見をいくつで止めるか、0 なら 20) を定める仕様 ID は無い。fuzzIsolated で発見が上限より 1 つ多く残る。"
     }
   ]
 }

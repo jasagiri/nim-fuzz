@@ -8,7 +8,7 @@ and every `# SPEC: ID` tag under `tests/**`. Do not hand-edit -- re-run
 | ID | test files (count) |
 |---|---|
 | RUN-01 | tests/external/test_fuzz.nim (2), tests/external/test_fuzz_isolated.nim (1) |
-| RUN-02 | tests/external/test_fuzz.nim (1), tests/external/test_fuzz_isolated.nim (1) |
+| RUN-02 | tests/external/test_fuzz.nim (2), tests/external/test_fuzz_isolated.nim (2) |
 | RUN-03 | tests/external/test_fuzz.nim (2), tests/external/test_fuzz_isolated.nim (1) |
 | RUN-04 | tests/external/test_fuzz.nim (2) |
 | FND-01 | tests/external/test_fuzz.nim (2) |
@@ -16,21 +16,23 @@ and every `# SPEC: ID` tag under `tests/**`. Do not hand-edit -- re-run
 | FND-03 | tests/external/test_fuzz.nim (1) |
 | FND-04 | tests/external/test_fuzz.nim (1) |
 | FND-05 | tests/external/test_fuzz.nim (2) |
-| MIN-01 | tests/external/test_fuzz.nim (4), tests/external/test_fuzz_isolated.nim (1) |
+| MIN-01 | tests/external/test_fuzz.nim (5), tests/external/test_fuzz_isolated.nim (1) |
 | COV-01 | tests/external/test_fuzz.nim (1), tests/external/test_fuzz_isolated.nim (1) |
 | COV-02 | tests/external/test_fuzz.nim (1) |
+| COV-03 | tests/external/test_fuzz.nim (1) |
 | RPL-01 | tests/external/test_fuzz.nim (1) |
 | CRP-01 | tests/external/test_fuzz.nim (3) |
 | IFL-01 | tests/external/test_fuzz.nim (2) |
 | ISO-01 | tests/external/test_fuzz_isolated.nim (2) |
-| ISO-02 | tests/external/test_fuzz_isolated.nim (4) |
+| ISO-02 | tests/external/test_fuzz_isolated.nim (5) |
 | ISO-03 | tests/external/test_fuzz_isolated.nim (2) |
 | ISO-04 | tests/external/test_fuzz_isolated.nim (3) |
 | ISO-05 | tests/external/test_fuzz_isolated.nim (2) |
 | ISO-06 | tests/external/test_fuzz_isolated.nim (2) |
 | ISO-07 | tests/external/test_fuzz_isolated.nim (1) |
+| ISO-08 | tests/external/test_fuzz_isolated.nim (1) |
 
-Declared: 22  Covered: 22  Uncovered: 0
+Declared: 24  Covered: 24  Uncovered: 0
 
 ## Uncovered declared IDs
 
