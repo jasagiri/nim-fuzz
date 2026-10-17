@@ -195,6 +195,14 @@ suite "making a finding small":
     check report.findings[0].reason == "holds boom"
     check report.findings[0].input == "boom"
 
+  # SPEC: MIN-01
+  test "Given a target that objects to aba, ba and b, When fuzzed from aba, Then the finding's input is b: no one byte can be taken out of it and leave the finding":
+    let report = fuzz(proc(input: string): string {.raises: [CatchableError].} =
+                        if input in ["aba", "ba", "b"]: "one of the three" else: "",
+                      ["aba"], config(1))
+    check report.findings.len == 1
+    check report.findings[0].input == "b"
+
 suite "the coverage signal":
   # SPEC: COV-01
   test "Given how the test was compiled, When fuzzed, Then the report says whether the signal was on, and with it on, edges were reached":

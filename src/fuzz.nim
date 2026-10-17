@@ -108,15 +108,16 @@ proc judge(target: FuzzTarget; input: string; config: FuzzConfig): Verdict {.rai
 proc minimised(input: string; verdict: Verdict; budget: int;
                judgeAgain: proc(candidate: string): Verdict {.raises: [ValueError, IOError, OSError].}): Finding
               {.raises: [ValueError, IOError, OSError].} =
-  ## `input` with every stretch taken out that can go while the finding
-  ## stays the same finding, in at most `budget` tries. The reason is the
-  ## one the reduced input gives.
+  ## `input` with stretches taken out while the finding stays the same
+  ## finding, until no one byte can be taken out (MIN-01: 1-minimal), in at
+  ## most `budget` tries. The reason is the one the reduced input gives.
   result = Finding(kind: verdict.kind, input: input, reason: verdict.reason)
   if verdict.kind == fkSlow: return       # each try would take as long again
   var tries = 0
   var size = max(1, result.input.len div 2)
   while size >= 1 and tries < budget:
     var at = result.input.len - size
+    var shrank = false
     while at >= 0 and tries < budget:
       let candidate = result.input[0 ..< at] & result.input[at + size .. ^1]
       inc tries
@@ -124,11 +125,14 @@ proc minimised(input: string; verdict: Verdict; budget: int;
       if again.wrong and again.key == verdict.key:
         result.input = candidate
         result.reason = again.reason
+        shrank = true
         at = min(at, result.input.len - size)
       else:
         dec at
-    if size == 1: break
-    size = size div 2
+    if size > 1: size = size div 2
+    # A byte passed over may go once one before it has gone: one pass of
+    # single bytes is not enough, only a pass that takes nothing out is.
+    elif not shrank: break
 
 # ─── mutation ───────────────────────────────────────────────────────────────
 
