@@ -21,16 +21,6 @@
       "reason": "最小化の試行の上限 2000 が 2001 になる。MIN-01 は上限なしに「除けるだけ除く」と述べ、試行の上限 (プロセス内 2000、hung 24) を述べていない。上限を仕様に書くか、定めないか。"
     },
     {
-      "fingerprint": "src/fuzz.nim:CVR:4d5598c6179911b7:0",
-      "file": "src/fuzz.nim",
-      "line": 87,
-      "mutator": "CVR",
-      "original": "0",
-      "replacement": "1",
-      "class": "test_owed",
-      "reason": "FND-05: 「Given a limit of 1 ms and a target that takes 30 ms …」で検出 (変異を手で当てて落ちることを確認)"
-    },
-    {
       "fingerprint": "src/fuzz.nim:ROR:a090f3de06cf9d21:0",
       "file": "src/fuzz.nim",
       "line": 89,
@@ -51,26 +41,6 @@
       "reason": "87 行で wrong の verdict は先に返るので、ここの verdict は wrong でない。wrong でない Verdict は judge でも answerOf (370 行) でも既定値 Verdict() そのもので、既定値を返しても同じ。"
     },
     {
-      "fingerprint": "src/fuzz.nim:CVR:48f7cd553e0b23b7:0",
-      "file": "src/fuzz.nim",
-      "line": 94,
-      "mutator": "CVR",
-      "original": "0",
-      "replacement": "1",
-      "class": "test_owed",
-      "reason": "IFL-01: 「Given a file for the input in flight whose name is one letter …」で検出 (変異を手で当てて落ちることを確認)"
-    },
-    {
-      "fingerprint": "src/fuzz.nim:CVR:807e58c13c7e24a9:0",
-      "file": "src/fuzz.nim",
-      "line": 98,
-      "mutator": "CVR",
-      "original": "0",
-      "replacement": "1",
-      "class": "test_owed",
-      "reason": "FND-01: 「Given a target whose reason is one letter …」で検出 (変異を手で当てて落ちることを確認)"
-    },
-    {
       "fingerprint": "src/fuzz.nim:CVR:a7af08b6bd2f0f85:0",
       "file": "src/fuzz.nim",
       "line": 116,
@@ -81,16 +51,6 @@
       "reason": "試行の数え始めが 1 になり、上限に 1 回早く届く。MIN-01 は上限なしに「除けるだけ除く」と述べ、試行の上限 (プロセス内 2000、hung 24) を述べていない。上限を仕様に書くか、定めないか。"
     },
     {
-      "fingerprint": "src/fuzz.nim:AOR:b85715e019b841b6:0",
-      "file": "src/fuzz.nim",
-      "line": 117,
-      "mutator": "AOR",
-      "original": "result.input.len div 2",
-      "replacement": "<div -> mod>",
-      "class": "test_owed",
-      "reason": "MIN-01: 「Given a target that objects to inputs of an even number of bytes …」で検出 (変異を手で当てて落ちることを確認)"
-    },
-    {
       "fingerprint": "src/fuzz.nim:CVR:447180f3a3a8a597:0",
       "file": "src/fuzz.nim",
       "line": 117,
@@ -99,16 +59,6 @@
       "replacement": "2",
       "class": "spec_question",
       "reason": "最初に除く幅が、長さ 2〜3 の入力でも 2 になる。結果が変わるのは、2 バイトまとめて除くと同じ発見のままで、1 バイトでは変わる入力 (例: 長さが 1 でない入力に理由を返す対象と seed \"ab\": 元は \"ab\"、変異後は \"\")。このときは変異後の方が小さい。MIN-01 の「除けるだけ除く」は、1 バイトずつ除いてもう縮まないこと (1-minimal) を言うのか、どの部分を除いても縮まないことを言うのか。後者なら元の実装が仕様を満たさない入力がある。"
-    },
-    {
-      "fingerprint": "src/fuzz.nim:CVR:8006aa90ba9fffe3:0",
-      "file": "src/fuzz.nim",
-      "line": 117,
-      "mutator": "CVR",
-      "original": "2",
-      "replacement": "3",
-      "class": "test_owed",
-      "reason": "MIN-01: 「Given a target that objects to inputs of an even number of bytes …」で検出 (変異を手で当てて落ちることを確認)"
     },
     {
       "fingerprint": "src/fuzz.nim:LOR:825b07510029570b:0",
@@ -149,16 +99,6 @@
       "replacement": "discard",
       "class": "spec_question",
       "reason": "試行の上限が効かなくなる (輪は、入力が縮むか at が減るので上限なしでも終わる)。MIN-01 は上限なしに「除けるだけ除く」と述べ、試行の上限 (プロセス内 2000、hung 24) を述べていない。上限を仕様に書くか、定めないか。"
-    },
-    {
-      "fingerprint": "src/fuzz.nim:LOR:bf00941107c5b5fb:0",
-      "file": "src/fuzz.nim",
-      "line": 124,
-      "mutator": "LOR",
-      "original": "again.wrong and again.key == verdict.key",
-      "replacement": "<and -> or>",
-      "class": "test_owed",
-      "reason": "MIN-01: 「Given a target with one reason for boom and another for q …」で検出 (変異を手で当てて落ちることを確認)"
     },
     {
       "fingerprint": "src/fuzz.nim:CVR:b23e0e9dd5a5f72e:0",
@@ -291,46 +231,6 @@
       "reason": "result.len == maxLen のとき setLen(maxLen) は何も変えない。"
     },
     {
-      "fingerprint": "src/fuzz.nim:CVR:ba31aac9db0ab688:0",
-      "file": "src/fuzz.nim",
-      "line": 191,
-      "mutator": "CVR",
-      "original": "1",
-      "replacement": "2",
-      "class": "test_owed",
-      "reason": "RUN-03: 「Given one run and a greatest length of 1 …」で検出 (変異を手で当てて落ちることを確認)"
-    },
-    {
-      "fingerprint": "src/fuzz.nim:ROR:3d60e368f7f2ede3:0",
-      "file": "src/fuzz.nim",
-      "line": 191,
-      "mutator": "ROR",
-      "original": "config.runs < 1",
-      "replacement": "<< -> <=>",
-      "class": "test_owed",
-      "reason": "RUN-03: 「Given one run and a greatest length of 1 …」で検出 (変異を手で当てて落ちることを確認)"
-    },
-    {
-      "fingerprint": "src/fuzz.nim:CVR:503abedcacf91560:0",
-      "file": "src/fuzz.nim",
-      "line": 192,
-      "mutator": "CVR",
-      "original": "1",
-      "replacement": "2",
-      "class": "test_owed",
-      "reason": "RUN-03: 「Given one run and a greatest length of 1 …」で検出 (変異を手で当てて落ちることを確認)"
-    },
-    {
-      "fingerprint": "src/fuzz.nim:ROR:aaad9265235a92b6:0",
-      "file": "src/fuzz.nim",
-      "line": 192,
-      "mutator": "ROR",
-      "original": "config.maxLen < 1",
-      "replacement": "<< -> <=>",
-      "class": "test_owed",
-      "reason": "RUN-03: 「Given one run and a greatest length of 1 …」で検出 (変異を手で当てて落ちることを確認)"
-    },
-    {
       "fingerprint": "src/fuzz.nim:CVR:2f3c2259f38858b4:0",
       "file": "src/fuzz.nim",
       "line": 193,
@@ -361,26 +261,6 @@
       "reason": "seed.len == maxLen のとき seed[0 ..< maxLen] は seed そのもの。"
     },
     {
-      "fingerprint": "src/fuzz.nim:SDL:1cdbb12046cc21b8:0",
-      "file": "src/fuzz.nim",
-      "line": 200,
-      "mutator": "SDL",
-      "original": "fuzzResetEdges()",
-      "replacement": "discard",
-      "class": "test_owed",
-      "reason": "RUN-04: 「Given no seed and a target with a branch only a non-empty input takes … twice …」で検出 (変異を手で当てて落ちることを確認)。-d:fuzzCoverage の版で 2 度目の実行が入力を残さない"
-    },
-    {
-      "fingerprint": "src/fuzz.nim:CVR:7de69babe93c4cd2:0",
-      "file": "src/fuzz.nim",
-      "line": 203,
-      "mutator": "CVR",
-      "original": "0",
-      "replacement": "1",
-      "class": "test_owed",
-      "reason": "IFL-01: 「Given a file for the input in flight whose name is one letter …」で検出 (変異を手で当てて落ちることを確認)"
-    },
-    {
       "fingerprint": "src/fuzz.nim:ROR:435a2dc1dc95aba4:0",
       "file": "src/fuzz.nim",
       "line": 203,
@@ -401,26 +281,6 @@
       "reason": "発見が上限より 1 つ多く残る。maxFindings (発見をいくつで止めるか、0 なら 20) はフィールドの doc comment にだけあり、仕様 ID が無い。maxFindings の振る舞いを仕様に足すか、定めないか。"
     },
     {
-      "fingerprint": "src/fuzz.nim:ROR:40f909897b74389c:0",
-      "file": "src/fuzz.nim",
-      "line": 217,
-      "mutator": "ROR",
-      "original": "run >= seedCount",
-      "replacement": "<>= -> >>",
-      "class": "test_owed",
-      "reason": "RUN-04: 「Given no seed and a target with a branch only a non-empty input takes … twice …」で検出 (変異を手で当てて落ちることを確認)。-d:fuzzCoverage の版。最初の変異入力が残らない"
-    },
-    {
-      "fingerprint": "src/fuzz.nim:CVR:7de69babe93c4cd2:1",
-      "file": "src/fuzz.nim",
-      "line": 227,
-      "mutator": "CVR",
-      "original": "0",
-      "replacement": "1",
-      "class": "test_owed",
-      "reason": "IFL-01: 「Given a file for the input in flight whose name is one letter …」で検出 (変異を手で当てて落ちることを確認)。replay の側"
-    },
-    {
       "fingerprint": "src/fuzz.nim:ROR:435a2dc1dc95aba4:1",
       "file": "src/fuzz.nim",
       "line": 227,
@@ -429,16 +289,6 @@
       "replacement": "<> -> >=>",
       "class": "equivalent",
       "reason": "inFlightPath が空のとき removeFile(\"\") が呼ばれる。unlink(\"\") は ENOENT で失敗し、removeFile (tryRemoveFile) は ENOENT を誤りにしないので、何も起きない。"
-    },
-    {
-      "fingerprint": "src/fuzz.nim:SDL:236158f5694d1fdf:1",
-      "file": "src/fuzz.nim",
-      "line": 227,
-      "mutator": "SDL",
-      "original": "removeFile(config.inFlightPath)",
-      "replacement": "discard",
-      "class": "test_owed",
-      "reason": "IFL-01: 「Given a file for the input in flight whose name is one letter …」で検出 (変異を手で当てて落ちることを確認)。replay の側"
     },
     {
       "fingerprint": "src/fuzz.nim:CVR:d28e74a9b0807a47:0",
@@ -479,16 +329,6 @@
       "replacement": "<== -> !=>",
       "class": "spec_question",
       "reason": "最初の名前に「-0」が付き、2 つ目が番号なしになる。CRP-01 は「同じ入力は同じ名前」「.input で終わる」だけを述べ、変異後もこの 2 つは保たれる (名前の形だけが変わる)。名前の形 (16 桁の 16 進 - 長さ [- 番号] .input) を仕様に書くか、定めないか。"
-    },
-    {
-      "fingerprint": "src/fuzz.nim:SDL:8bd1399d2ae27ef3:0",
-      "file": "src/fuzz.nim",
-      "line": 248,
-      "mutator": "SDL",
-      "original": "inc attempt",
-      "replacement": "discard",
-      "class": "test_owed",
-      "reason": "CRP-01: 「Given the file an input would be saved to already holds another input of its length …」で検出 (変異を手で当てて落ちることを確認)。変異後は終わらない (60 秒で打ち切り)"
     },
     {
       "fingerprint": "src/fuzz.nim:CVR:55b74b1d9e16519f:0",
@@ -549,16 +389,6 @@
       "replacement": "<return default>",
       "class": "equivalent",
       "reason": "bool の既定値は false で、元の return false と同じ。"
-    },
-    {
-      "fingerprint": "src/fuzz.nim:AOR:3a84681137dccdab:0",
-      "file": "src/fuzz.nim",
-      "line": 278,
-      "mutator": "AOR",
-      "original": "cast[uint](data) + done.uint",
-      "replacement": "<+ -> ->",
-      "class": "test_owed",
-      "reason": "RUN-01: 「Given a seed of a million bytes, more than a pipe holds at once …」で検出 (変異を手で当てて落ちることを確認)"
     },
     {
       "fingerprint": "src/fuzz.nim:AOR:7e7d447d0ce98842:0",
@@ -641,76 +471,6 @@
       "reason": "子の輪を抜けるのは、受け取りか返答が失敗したとき、つまり親がパイプを閉じたときだけ。親は子を kill してから閉じる (stop、333 行) ので、子がこの行に来ることは無い。"
     },
     {
-      "fingerprint": "src/fuzz.nim:SDL:ebdc70eafd37f2ac:0",
-      "file": "src/fuzz.nim",
-      "line": 335,
-      "mutator": "SDL",
-      "original": "child.process.close()",
-      "replacement": "discard",
-      "class": "test_owed",
-      "reason": "ISO-03: 「Given a process allowed 64 open files, When a target that never answers is fuzzed 30 times …」で検出 (変異を手で当てて落ちることを確認)。パイプが閉じられず Too many open files"
-    },
-    {
-      "fingerprint": "src/fuzz.nim:CVR:ba31aac9db0ab688:1",
-      "file": "src/fuzz.nim",
-      "line": 345,
-      "mutator": "CVR",
-      "original": "1",
-      "replacement": "2",
-      "class": "test_owed",
-      "reason": "RUN-03: 「Given one run, a greatest length of 1, or 1 ms to answer …」で検出 (変異を手で当てて落ちることを確認)"
-    },
-    {
-      "fingerprint": "src/fuzz.nim:ROR:3d60e368f7f2ede3:1",
-      "file": "src/fuzz.nim",
-      "line": 345,
-      "mutator": "ROR",
-      "original": "config.runs < 1",
-      "replacement": "<< -> <=>",
-      "class": "test_owed",
-      "reason": "RUN-03: 「Given one run, a greatest length of 1, or 1 ms to answer …」で検出 (変異を手で当てて落ちることを確認)"
-    },
-    {
-      "fingerprint": "src/fuzz.nim:CVR:503abedcacf91560:1",
-      "file": "src/fuzz.nim",
-      "line": 346,
-      "mutator": "CVR",
-      "original": "1",
-      "replacement": "2",
-      "class": "test_owed",
-      "reason": "RUN-03: 「Given one run, a greatest length of 1, or 1 ms to answer …」で検出 (変異を手で当てて落ちることを確認)"
-    },
-    {
-      "fingerprint": "src/fuzz.nim:ROR:aaad9265235a92b6:1",
-      "file": "src/fuzz.nim",
-      "line": 346,
-      "mutator": "ROR",
-      "original": "config.maxLen < 1",
-      "replacement": "<< -> <=>",
-      "class": "test_owed",
-      "reason": "RUN-03: 「Given one run, a greatest length of 1, or 1 ms to answer …」で検出 (変異を手で当てて落ちることを確認)"
-    },
-    {
-      "fingerprint": "src/fuzz.nim:CVR:791ee3032d61bbbf:0",
-      "file": "src/fuzz.nim",
-      "line": 347,
-      "mutator": "CVR",
-      "original": "1",
-      "replacement": "2",
-      "class": "test_owed",
-      "reason": "ISO-06: 「Given one run, a greatest length of 1, or 1 ms to answer …」で検出 (変異を手で当てて落ちることを確認)"
-    },
-    {
-      "fingerprint": "src/fuzz.nim:ROR:289c3a1419d26328:0",
-      "file": "src/fuzz.nim",
-      "line": 347,
-      "mutator": "ROR",
-      "original": "hangAfterMs < 1",
-      "replacement": "<< -> <=>",
-      "class": "test_owed",
-      "reason": "ISO-06: 「Given one run, a greatest length of 1, or 1 ms to answer …」で検出 (変異を手で当てて落ちることを確認)"
-    },
-    {
       "fingerprint": "src/fuzz.nim:CVR:2f3c2259f38858b4:1",
       "file": "src/fuzz.nim",
       "line": 348,
@@ -719,16 +479,6 @@
       "replacement": "1",
       "class": "spec_question",
       "reason": "fuzzIsolated で maxFindings = 1 が既定 (20) と同じ扱いになる。maxFindings (発見をいくつで止めるか、0 なら 20) はフィールドの doc comment にだけあり、仕様 ID が無い。maxFindings の振る舞いを仕様に足すか、定めないか。"
-    },
-    {
-      "fingerprint": "src/fuzz.nim:SDL:02f0c270ad7b9751:0",
-      "file": "src/fuzz.nim",
-      "line": 350,
-      "mutator": "SDL",
-      "original": "child.stop()",
-      "replacement": "discard",
-      "class": "test_owed",
-      "reason": "ISO-01: 「Given a process allowed 64 open files, When a target with nothing wrong is fuzzed … 30 times over …」で検出 (変異を手で当てて落ちることを確認)。子が残り Too many open files"
     },
     {
       "fingerprint": "src/fuzz.nim:BLR:97d995e76cdb7592:0",
@@ -759,16 +509,6 @@
       "replacement": "2",
       "class": "spec_question",
       "reason": "poll に pollfd を 1 つしか渡さないのに数を 2 にし、スタックの隣の値を 2 つ目の pollfd として読ませる (未定義の動作)。隣の値によって hung の判定が壊れ得るが、テストでその値を決められない。この生き残りを受け入れる (accepted) か、利用者の判断が要る。"
-    },
-    {
-      "fingerprint": "src/fuzz.nim:SDL:5e8a082dadaba9c8:0",
-      "file": "src/fuzz.nim",
-      "line": 361,
-      "mutator": "SDL",
-      "original": "child.stop()",
-      "replacement": "discard",
-      "class": "test_owed",
-      "reason": "ISO-03: 「Given a process allowed 64 open files, When a target that never answers is fuzzed 30 times …」で検出 (変異を手で当てて落ちることを確認)。止まった子が残り Too many open files"
     },
     {
       "fingerprint": "src/fuzz.nim:CVR:c818384eaa40e27d:0",
@@ -831,56 +571,6 @@
       "reason": "head[0] - 1 は 2 以下で 5 に届かない。子は同じプログラムで、314 行で送る種類は 1 + ord(kind)。kind は judge が返す fkReported / fkRaised / fkDefect のどれかで (子の FuzzConfig() は slowAfterMs が 0 なので fkSlow にならない)、head[0] は 0〜3、head[1] は 0 か 1。元も変異後も 371 行の条件は偽で、例外は上がらず、372 行の kind も同じ。"
     },
     {
-      "fingerprint": "src/fuzz.nim:SDL:ebdc70eafd37f2ac:1",
-      "file": "src/fuzz.nim",
-      "line": 377,
-      "mutator": "SDL",
-      "original": "child.process.close()",
-      "replacement": "discard",
-      "class": "test_owed",
-      "reason": "ISO-02: 「Given a process allowed 64 open files, When a target that ends its process on every input is fuzzed 100 times …」で検出 (変異を手で当てて落ちることを確認)。パイプが閉じられず Too many open files"
-    },
-    {
-      "fingerprint": "src/fuzz.nim:AOR:e3dfe2df29fff6ea:0",
-      "file": "src/fuzz.nim",
-      "line": 382,
-      "mutator": "AOR",
-      "original": "code - 128",
-      "replacement": "<- -> +>",
-      "class": "test_owed",
-      "reason": "ISO-02: 「Given a target that ends its process with SIGTERM, with SIGHUP, or with exit code 128 …」で検出 (変異を手で当てて落ちることを確認)"
-    },
-    {
-      "fingerprint": "src/fuzz.nim:CVR:5c19094eeffb22a0:0",
-      "file": "src/fuzz.nim",
-      "line": 382,
-      "mutator": "CVR",
-      "original": "128",
-      "replacement": "129",
-      "class": "test_owed",
-      "reason": "ISO-02: 「Given a target that ends its process with SIGTERM, with SIGHUP, or with exit code 128 …」で検出 (変異を手で当てて落ちることを確認)。SIGHUP (129) が code 129 になる"
-    },
-    {
-      "fingerprint": "src/fuzz.nim:CVR:5c19094eeffb22a0:1",
-      "file": "src/fuzz.nim",
-      "line": 382,
-      "mutator": "CVR",
-      "original": "128",
-      "replacement": "129",
-      "class": "test_owed",
-      "reason": "ISO-02: 「Given a target that ends its process with SIGTERM, with SIGHUP, or with exit code 128 …」で検出 (変異を手で当てて落ちることを確認)。SIGTERM が signal 14 になる"
-    },
-    {
-      "fingerprint": "src/fuzz.nim:ROR:97a748c52647a605:0",
-      "file": "src/fuzz.nim",
-      "line": 382,
-      "mutator": "ROR",
-      "original": "code > 128",
-      "replacement": "<> -> >=>",
-      "class": "test_owed",
-      "reason": "ISO-02: 「Given a target that ends its process with SIGTERM, with SIGHUP, or with exit code 128 …」で検出 (変異を手で当てて落ちることを確認)。終了コード 128 が signal 0 になる"
-    },
-    {
       "fingerprint": "src/fuzz.nim:CVR:33b5b73c967c816b:1",
       "file": "src/fuzz.nim",
       "line": 391,
@@ -889,16 +579,6 @@
       "replacement": "1",
       "class": "spec_question",
       "reason": "fuzzIsolated で、長すぎる種が 2 バイト目からの maxLen - 1 バイトに切られる。RUN-02 は長さが maxLen を超えないことだけを述べ、長すぎる種を切ったあとの中身を述べていない。「先頭の maxLen バイトを残す」を仕様に足すか、定めないか。"
-    },
-    {
-      "fingerprint": "src/fuzz.nim:LBR:093389092600da06:1",
-      "file": "src/fuzz.nim",
-      "line": 391,
-      "mutator": "LBR",
-      "original": "0 ..< config.maxLen",
-      "replacement": "<..< -> ..>",
-      "class": "test_owed",
-      "reason": "RUN-02: 「Given a greatest length of 8 and a seed that is longer, When fuzzed in a process of its own …」で検出 (変異を手で当てて落ちることを確認)"
     },
     {
       "fingerprint": "src/fuzz.nim:ROR:c4c7c0355b237546:1",
@@ -911,36 +591,6 @@
       "reason": "seed.len == maxLen のとき seed[0 ..< maxLen] は seed そのもの。"
     },
     {
-      "fingerprint": "src/fuzz.nim:CVR:09a8e10c652c31d8:1",
-      "file": "src/fuzz.nim",
-      "line": 392,
-      "mutator": "CVR",
-      "original": "0",
-      "replacement": "1",
-      "class": "test_owed",
-      "reason": "ISO-05: 「Given no seed and a target with a branch … in a process of its own for two inputs …」で検出 (変異を手で当てて落ちることを確認)。種が無いと親が範囲外の乱数で止まる"
-    },
-    {
-      "fingerprint": "src/fuzz.nim:ROR:09bb291429e0e90c:1",
-      "file": "src/fuzz.nim",
-      "line": 392,
-      "mutator": "ROR",
-      "original": "pool.len == 0",
-      "replacement": "<== -> !=>",
-      "class": "test_owed",
-      "reason": "ISO-05: 「Given no seed and a target with a branch … in a process of its own for two inputs …」で検出 (変異を手で当てて落ちることを確認)。種が無いと親が範囲外の乱数で止まる"
-    },
-    {
-      "fingerprint": "src/fuzz.nim:SDL:96239a0d91701305:1",
-      "file": "src/fuzz.nim",
-      "line": 392,
-      "mutator": "SDL",
-      "original": "pool.add \"\"",
-      "replacement": "discard",
-      "class": "test_owed",
-      "reason": "ISO-05: 「Given no seed and a target with a branch … in a process of its own for two inputs …」で検出 (変異を手で当てて落ちることを確認)。種が無いと親が範囲外の乱数で止まる"
-    },
-    {
       "fingerprint": "src/fuzz.nim:ROR:b73c1cc56b2410ad:1",
       "file": "src/fuzz.nim",
       "line": 403,
@@ -949,36 +599,6 @@
       "replacement": "<< -> <=>",
       "class": "spec_question",
       "reason": "fuzzIsolated で発見が上限より 1 つ多く残る。maxFindings (発見をいくつで止めるか、0 なら 20) はフィールドの doc comment にだけあり、仕様 ID が無い。maxFindings の振る舞いを仕様に足すか、定めないか。"
-    },
-    {
-      "fingerprint": "src/fuzz.nim:ROR:83976cb874267f1d:0",
-      "file": "src/fuzz.nim",
-      "line": 407,
-      "mutator": "ROR",
-      "original": "verdict.kind == fkHung",
-      "replacement": "<== -> !=>",
-      "class": "test_owed",
-      "reason": "MIN-01: 「Given a long seed with boom in the middle, When fuzzed in a process of its own …」で検出 (変異を手で当てて落ちることを確認)"
-    },
-    {
-      "fingerprint": "src/fuzz.nim:ROR:40f909897b74389c:1",
-      "file": "src/fuzz.nim",
-      "line": 408,
-      "mutator": "ROR",
-      "original": "run >= seedCount",
-      "replacement": "<>= -> >>",
-      "class": "test_owed",
-      "reason": "ISO-05: 「Given no seed and a target with a branch … in a process of its own for two inputs …」で検出 (変異を手で当てて落ちることを確認)。-d:fuzzCoverage の版"
-    },
-    {
-      "fingerprint": "src/fuzz.nim:SDL:4766ddcc622b379a:0",
-      "file": "src/fuzz.nim",
-      "line": 410,
-      "mutator": "SDL",
-      "original": "inc result.edges",
-      "replacement": "discard",
-      "class": "test_owed",
-      "reason": "COV-01: 「Given no seed and a target with a branch … in a process of its own for two inputs …」で検出 (変異を手で当てて落ちることを確認)。-d:fuzzCoverage の版で edges が 0"
     }
   ]
 }
