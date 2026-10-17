@@ -149,6 +149,15 @@ suite "findings":
     check report.findings[0].kind == fkSlow
     check report.findings[0].input == "z"
 
+  # SPEC: RUN-02
+  test "Given a greatest length of 4 and a seed of ten bytes, When fuzzed, Then the seed the target gets is its first four bytes":
+    var seen: seq[string]
+    discard fuzz(proc(input: string): string {.raises: [CatchableError].} =
+                   seen.add input
+                   "",
+                 ["abcdefghij"], config(1, maxLen = 4))
+    check seen == @["abcd"]
+
 suite "making a finding small":
   # SPEC: MIN-01
   test "Given a target that objects to inputs holding boom, When fuzzed from long seeds, Then the finding's input is exactly boom":
@@ -215,7 +224,7 @@ suite "the coverage signal":
     else:
       skip()
 
-  # SPEC: RUN-04
+  # SPEC: RUN-04, COV-03
   test "Given no seed and a target with a branch only a non-empty input takes, When fuzzed for two inputs, twice, Then with the signal each run keeps the mutated input that took the branch, and without it neither does":
     var nonEmpty = 0
     let branchy = proc(input: string): string {.raises: [CatchableError].} =

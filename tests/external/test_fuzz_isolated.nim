@@ -62,6 +62,20 @@ proc signals(input: string): string {.raises: [CatchableError].} =
   if input == "E": exitnow(128)                 # quit clamps codes above 127
   ""
 
+proc isAbcd(input: string): string {.raises: [CatchableError].} =
+  if input != "abcd": "got " & input else: ""
+
+proc classify(input: string): string {.raises: [].} =
+  ## Called before serveIfChild too, as a module's initialisation would.
+  if input.len == 0: "empty" else: "some"
+
+proc startupShared(input: string): string {.raises: [CatchableError].} =
+  ## Its only branch for a non-empty input is one the program ran at startup.
+  discard classify(input)
+  ""
+
+doAssert classify("at startup") == "some"
+
 proc dies(input: string): string {.raises: [CatchableError].} =
   quit(3)
 
@@ -73,7 +87,8 @@ serveIfChild({"clean": FuzzTarget(clean), "crashy": FuzzTarget(crashy), "hangy":
               "talkative": FuzzTarget(talkative), "staged": FuzzTarget(staged),
               "sleepy": FuzzTarget(sleepy), "branchy": FuzzTarget(branchy), "long": FuzzTarget(long),
               "whole": FuzzTarget(whole), "signals": FuzzTarget(signals), "dies": FuzzTarget(dies),
-              "stuck": FuzzTarget(stuck)})
+              "stuck": FuzzTarget(stuck), "isAbcd": FuzzTarget(isAbcd),
+              "startupShared": FuzzTarget(startupShared)})
 
 proc config(runs: int; dictionary: seq[string] = @[]; maxLen = 32): FuzzConfig =
   FuzzConfig(runs: runs, seed: 0, maxLen: maxLen, dictionary: dictionary)
@@ -240,3 +255,18 @@ suite "a target in a process of its own":
     withOpenFilesAtMost(64):
       for _ in 0 ..< 30:
         check fuzzIsolated("clean", ["x"], config(1), hangAfterMs = 2000).runs == 1
+
+  # SPEC: RUN-02
+  test "Given a greatest length of 4 and a seed of ten bytes, When fuzzed in a process of its own, Then the seed the target gets is its first four bytes":
+    let report = fuzzIsolated("isAbcd", ["abcdefghij"], config(1, maxLen = 4), hangAfterMs = 2000)
+    check report.runs == 1
+    check report.findings.len == 0
+
+  # SPEC: ISO-08
+  test "Given a target whose only branch for a non-empty input the program also ran before serveIfChild, When fuzzed in a process of its own for two inputs from no seed, Then with the signal the mutated input that took the branch is kept":
+    let report = fuzzIsolated("startupShared", newSeq[string](), config(2), hangAfterMs = 2000)
+    check report.runs == 2
+    when defined(fuzzCoverage):
+      check report.corpusSize == 2
+    else:
+      check report.corpusSize == 1
