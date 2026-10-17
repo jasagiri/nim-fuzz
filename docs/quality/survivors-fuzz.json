@@ -557,8 +557,8 @@
       "mutator": "CVR",
       "original": "0",
       "replacement": "1",
-      "class": "test_owed",
-      "reason": "waitpid の options を 1 (WNOHANG) にすると、子がパイプを閉じてからまだ終わっていないとき 0 が返り、終了の状態を読まずに「code 0」と述べる。test_fuzz_isolated.nim の「Given a target that closes its pipes and ends its process with exit code 3 a moment later…」(ISO-02) で検出 (手で当てて 10 回とも落ちることを確認)"
+      "class": "equivalent",
+      "reason": "383 行の 2 つ目の 0 (`< 0` の 0) を 1 にする変異。options 0 (待つ) の waitpid は子の pid (正) か -1 しか返さず、0 を返すのは WNOHANG のときだけなので、< 0 と < 1 はどの子についても同じ。"
     },
     {
       "fingerprint": "src/fuzz.nim:ROR:8fd61ee5848d808b:0",

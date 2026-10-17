@@ -13,6 +13,7 @@
 | 追加前 (測定) | 212 | 98 | 17 | 30 | 357 |
 | 追加後 (2026-10-17 測り直し、7898a910) | 247 | 60 | 20 | 30 | 357 |
 | 規則の追加と 2 つの修正の後 (2026-10-17、a8408b5d) | 250 | 61 | 20 | 30 | 361 |
+| ISO-02 のテストを 1 本足した後 (2026-10-17、accd2f3f) | 250 | 61 | 20 | 30 | 361 |
 
 「追加後」は足したテストを入れたコミット (7898a910) で測り直した値。足したテストで消える 38 件は、変異を 1 件ずつ `src/fuzz.nim` に手で当て、該当するビルド (信号なし、または `-d:fuzzCoverage`) で足したテストが落ちることも確かめてある。38 件のうち 35 件は killed、3 件は timeout になった (どちらも検出)。
 
@@ -20,9 +21,9 @@ timeout 17 件は、変異でテストが時間内に終わらなかったもの
 
 ## 生き残った変異と理由
 
-残り 61 件の内訳: 等価 27 件、未到達 5 件、許容 28 件、テストを足した 1 件。行の番号は 3 回目に測ったコミット (a8408b5d) のもの。表は台帳 (`survivors-fuzz.json`) から作った。
+残り 61 件の内訳: 等価 28 件、未到達 5 件、許容 28 件。行の番号は 4 回目に測ったコミット (accd2f3f) のもの (3 回目の a8408b5d と同じ)。表は台帳 (`survivors-fuzz.json`) から作った。`nim-muter-ledger check` は終了コード 0。
 
-許容はどれも、利用者が 2026-10-17 に決めたもの (下の「利用者の決定」)。テストを足した 1 件 (383 行の CVR) は、3 回目の測定のあとに足した ISO-02 の E テストで消える。変異は手で当てて 10 回とも落ちることを確かめたが、まだ測り直していない。そのため `nim-muter-ledger check` はこの 1 件を残りとして挙げる。
+許容はどれも、利用者が 2026-10-17 に決めたもの (下の「利用者の決定」)。
 
 | 行 | 変異子 | 元 → 変更後 | 分類 | 理由 |
 |---:|---|---|---|---|
@@ -81,7 +82,7 @@ timeout 17 件は、変異でテストが時間内に終わらなかったもの
 | 375 | CVR | `0` → `1` | 等価 | head[0] の代わりに head[1] (0 か 1) を見ても、条件は偽のまま。子は同じプログラムで、314 行で送る種類は 1 + ord(kind)。kind は judge が返す fkReported / fkRaised / fkDefect のどれかで (子の FuzzConfig() は slowAfterMs が 0 なので fkSlow にならない)、head[0] は 0〜3、head[1] は 0 か 1。元も変異後も 371 行の条件は偽で、例外は上がらず、372 行の kind も同じ。 |
 | 375 | CVR | `1` → `2` | 等価 | head[0] - 2 は 5 を超えない。子は同じプログラムで、314 行で送る種類は 1 + ord(kind)。kind は judge が返す fkReported / fkRaised / fkDefect のどれかで (子の FuzzConfig() は slowAfterMs が 0 なので fkSlow にならない)、head[0] は 0〜3、head[1] は 0 か 1。元も変異後も 371 行の条件は偽で、例外は上がらず、372 行の kind も同じ。 |
 | 375 | ROR | `head[0].int - 1 > ord(high(FindingKind))` → `<> -> >=>` | 等価 | head[0] - 1 は 2 以下で 5 に届かない。子は同じプログラムで、314 行で送る種類は 1 + ord(kind)。kind は judge が返す fkReported / fkRaised / fkDefect のどれかで (子の FuzzConfig() は slowAfterMs が 0 なので fkSlow にならない)、head[0] は 0〜3、head[1] は 0 か 1。元も変異後も 371 行の条件は偽で、例外は上がらず、372 行の kind も同じ。 |
-| 383 | CVR | `0` → `1` | テストを足した | waitpid の options を 1 (WNOHANG) にすると、子がパイプを閉じてからまだ終わっていないとき 0 が返り、終了の状態を読まずに「code 0」と述べる。test_fuzz_isolated.nim の「Given a target that closes its pipes and ends its process with exit code 3 a moment later…」(ISO-02) で検出 (手で当てて 10 回とも落ちることを確認) |
+| 383 | CVR | `0` → `1` | 等価 | 383 行の 2 つ目の 0 (`< 0` の 0) を 1 にする変異。options 0 (待つ) の waitpid は子の pid (正) か -1 しか返さず、0 を返すのは WNOHANG のときだけなので、< 0 と < 1 はどの子についても同じ。 |
 | 383 | ROR | `posix.waitpid(Pid(child.process.processID), status, 0) < 0` → `<< -> <=>` | 等価 | options 0 (待つ) の waitpid は、子の pid (正) か -1 しか返さない。0 を返すのは WNOHANG のときだけなので、< 0 と <= 0 はどの子についても同じ。 |
 | 384 | ROR | `errno != EINTR` → `<!= -> ==>` | 未到達 | ループの本体は waitpid が失敗したときだけ通る。テストでは失敗しない。失敗するのは、待っている間にシグナルハンドラが割り込んだとき (EINTR) か、子がほかで刈り取られたとき (SIGCHLD を無視したときの ECHILD) で、どちらも呼び出し側のプロセスの設定で、テストの対象 API の入力では作れない。 |
 | 384 | SDL | `raiseOSError(osLastError())` → `discard` | 未到達 | 上と同じ。raiseOSError は waitpid が EINTR 以外で失敗したときだけ通り、テストではその失敗が起きない。 |
@@ -156,8 +157,10 @@ timeout 17 件は、変異でテストが時間内に終わらなかったもの
 | MIN-01 Given a long seed with boom in the middle, When fuzzed in a process of its own … | 407 行 ROR |
 | COV-01 Given no seed and a target with a branch … in a process of its own for two inputs … | 410 行 SDL |
 
-## 追加したテスト (3 回目の測定のあと、まだ測り直していない)
+## 追加したテスト (3 回目の測定のあと、accd2f3f で測った)
 
 | テスト | 確かめること |
 |---|---|
-| ISO-02 Given a target that closes its pipes and ends its process with exit code 3 a moment later … | パイプが閉じてから子が終わるまでの間に状態を読んでも、終わった時のコード (3) を述べる。383 行の `waitpid` の options を 1 (WNOHANG) にした変異で 10 回とも落ちることを確かめた。子は応答に標準出力の写し (`serveIfChild` の `dup(1)`) を使うので、テストの対象は標準エラー以外の記述子をすべて閉じる |
+| ISO-02 Given a target that closes its pipes and ends its process with exit code 3 a moment later … | パイプが閉じてから子が終わるまでの間に状態を読んでも、終わった時のコード (3) を述べる。子は応答に標準出力の写し (`serveIfChild` の `dup(1)`) を使うので、テストの対象は標準エラー以外の記述子をすべて閉じる |
+
+訂正: 3 回目の測定のあと、383 行の CVR の生き残りを waitpid の options (1 つ目の 0) の変異と読み違え、このテストで消える `test_owed` とした。生き残っていたのは 2 つ目の 0 (`< 0` の 0) で、等価である。options の変異は 3 回目も 4 回目も既存のテストで killed だった。ただし既存のテストでは、子が終わり切る前に状態を読むかどうかが時の運で、このテストはそれを決まった形で確かめる (options を 1 にした変異で 10 回とも落ちることを手で確かめた)。
