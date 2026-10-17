@@ -3,6 +3,7 @@
 
 import std/[unittest, os, strutils, sequtils]
 from std/posix import kill, getpid, exitnow, SIGTERM, SIGHUP, RLimit, getrlimit, setrlimit, RLIMIT_NOFILE
+from std/posix import nil
 import fuzz
 
 proc clean(input: string): string {.raises: [CatchableError].} = ""
@@ -61,6 +62,16 @@ proc signals(input: string): string {.raises: [CatchableError].} =
   if input == "H" and kill(getpid(), SIGHUP) != 0: return "could not send SIGHUP"
   if input == "E": exitnow(128)                 # quit clamps codes above 127
   if input == "X": exitnow(130)
+  if input == "W":
+    # The pipes to the parent are standard input and a copy of standard
+    # output that serveIfChild made. Closing every descriptor but standard
+    # error makes the parent see the end of the pipe while this process is
+    # still running, as it may at any exit.
+    for fd in 0.cint .. 255.cint:
+      # Most of them are not open: EBADF is the expected answer for those.
+      if fd != 2 and posix.close(fd) != 0 and posix.errno != posix.EBADF: exitnow(99)
+    sleep(300)
+    exitnow(3)
   ""
 
 proc isAbcd(input: string): string {.raises: [CatchableError].} =
@@ -263,6 +274,13 @@ suite "a target in a process of its own":
     check report.findings.len == 1
     check report.findings[0].kind == fkCrashed
     check report.findings[0].reason == "the process ended with code 130"
+
+  # SPEC: ISO-02
+  test "Given a target that closes its pipes and ends its process with exit code 3 a moment later, When fuzzed, Then the finding names code 3, the code it ended with":
+    let report = fuzzIsolated("signals", ["W"], config(1), hangAfterMs = 2000)
+    check report.findings.len == 1
+    check report.findings[0].kind == fkCrashed
+    check report.findings[0].reason == "the process ended with code 3"
 
   # SPEC: RUN-02
   test "Given a greatest length of 4 and a seed of ten bytes, When fuzzed in a process of its own, Then the seed the target gets is its first four bytes":
