@@ -22,6 +22,7 @@ for finding in report.findings: echo finding.kind, " ", finding.reason, " ", fin
 - 見つけた入力は `saveInput` で保存し、`replay` でテストから毎回流す。ファジングそのものは時間をかけて別に流す。
 - `fuzz` はプロセス内で動くので、対象が落ちる・止まるとファザーも止まる。`inFlightPath` を設定すると、実行中の入力がファイルに残る。
 - `fuzzIsolated` は、対象を別のプロセスで走らせる。プロセスが終わった入力 (終了コード、シグナル) と、時間内に答えの無い入力が発見になり、新しいプロセスで実行が続く。プログラムの冒頭で `serveIfChild({"名前": 対象})` を呼んでおく。入力がパイプを往復するぶん遅い。`slowAfterMs` はここでも効き、時間は親が測る (パイプの往復を含む)。POSIX のみ。
+- 長く掘るときは libFuzzer に任せられる。`import fuzz/libfuzzer` して `libFuzzerTarget(target)` と書き、libFuzzer の実行時ライブラリを持つ clang (macOS では Homebrew の LLVM) で、`--noMain --panics:on -d:useMalloc -d:noSignalHandler --passC:-fsanitize=fuzzer,address --passL:-fsanitize=fuzzer,address` を付けてビルドする。判定は `fuzz` と同じ (理由・例外・Defect が発見)。手順は `src/fuzz/libfuzzer.nim` の冒頭。
 
 最初の成果: nim-x402 のヘッダーの読み取りが、4 バイトの入力で `IndexDefect` を上げた (標準ライブラリの `base64.decode` の、Nim 2.2.8 までの問題。nim-lang/Nim#25530、2.2.10 で修正済み)。
 

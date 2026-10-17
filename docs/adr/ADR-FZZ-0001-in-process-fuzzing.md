@@ -78,9 +78,22 @@
 
 入力がパイプを往復するので、プロセス内の実行より遅い。対象が出力に書いたものは捨てる (判定の通り道に混ざらないように)。
 
+### libFuzzer の入口 (2026-10-18 に追加)
+
+長く掘るときは、エンジンを libFuzzer に任せる。`fuzz/libfuzzer` の `libFuzzerTarget(target)` が、同じ対象に libFuzzer の入口を与える。変異とコーパスは libFuzzer が持ち、AddressSanitizer と組み合わせられる。
+
+この機体の Homebrew の LLVM 23 には libFuzzer の実行時ライブラリがあり、動くことを 2026-10-18 に確かめた (2026-10-07 の時点では動かなかった)。Apple の clang には無い。
+
+- **LFZ-01** 対象が理由を返した入力は発見である。理由を標準エラーに書いてから abort し、libFuzzer がその入力を保存する。
+- **LFZ-02** 対象が上げた例外は発見であり、例外の型と文を書く。
+- **LFZ-03** Defect (`--panics:on` でビルドする) は発見である。
+- **LFZ-04** モジュールの初期化 (`NimMain`) は、最初の入力より前に 1 回だけ走る。libFuzzer が任意の入口を dlsym で探すので、入口はプログラムから公開する。
+- **LFZ-05** 問題の無い入力では、何も書かずに次の入力へ進む。
+
+ビルドには `--noMain` (main は libFuzzer が持つ) と `-d:noSignalHandler` が要る。後者が無いと Nim のシグナルハンドラが abort を受け取り、libFuzzer は入力を保存しない。これはコンパイル時のエラーにした。`-d:fuzzCoverage` とは併用しない (計測の受け口が libFuzzer のものと重なる)。POSIX のみ。
+
 ## 作らないもの (Future)
 
 - 比較命令の計測 (`trace-cmp`)。4 バイトの数値との比較のような条件は、いまの信号では越えにくい。
 - 構造を知った変異 (JSON の木として壊す、など)。辞書でしのぐ。
-- libFuzzer の入口 (`LLVMFuzzerTestOneInput`) の提供。この機体で確かめられないので、書かない。
 - 並列の実行、コーパスの間引き。
