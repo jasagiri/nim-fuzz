@@ -1,0 +1,26 @@
+{
+  "sources": [
+    "src/fuzz.nim"
+  ],
+  "buildCommand": "nim c --hints:off -o:bin/tests/test_fuzz_g2 tests/external/test_fuzz.nim && nim c --hints:off --cc:clang -d:fuzzCoverage --nimcache:bin/nimcache-cov -o:bin/tests/test_fuzz_g2_cov tests/external/test_fuzz.nim && nim c --hints:off -o:bin/tests/test_fuzz_isolated_g2 tests/external/test_fuzz_isolated.nim && nim c --hints:off --cc:clang -d:fuzzCoverage --nimcache:bin/nimcache-cov -o:bin/tests/test_fuzz_isolated_g2_cov tests/external/test_fuzz_isolated.nim",
+  "testCommand": "./bin/tests/test_fuzz_g2 && ./bin/tests/test_fuzz_g2_cov && ./bin/tests/test_fuzz_isolated_g2 && ./bin/tests/test_fuzz_isolated_g2_cov",
+  "testOutput": "unittest",
+  "mutators": [
+    "AOR",
+    "ROR",
+    "LOR",
+    "BLR",
+    "SDL",
+    "RVR",
+    "LBR",
+    "CVR",
+    "AIR"
+  ],
+  "parallelism": 2,
+  "reports": [
+    "console",
+    "json"
+  ],
+  "outputDir": ".nim-muter/fuzz",
+  "incremental": false
+}
