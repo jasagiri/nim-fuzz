@@ -1,4 +1,4 @@
-## libFuzzer as the engine for a nim-fuzz target (ADR-FZZ-0001, LFZ).
+## libFuzzer as the engine for a nim-fuzz-inprocess target (ADR-FZZ-0001, LFZ).
 ##
 ## ```nim
 ## import fuzz/libfuzzer
@@ -51,7 +51,7 @@ proc runForLibFuzzer*(target: FuzzTarget, data: ptr UncheckedArray[byte],
   except CatchableError as e:
     reason = "raised " & $e.name & ": " & e.msg
   if reason.len > 0:
-    report("nim-fuzz finding: " & reason & "\n")
+    report("nim-fuzz-inprocess finding: " & reason & "\n")
     abort()
 
 template libFuzzerTarget*(target: FuzzTarget) =

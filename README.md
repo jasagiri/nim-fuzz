@@ -1,4 +1,4 @@
-# nim-fuzz
+# nim-fuzz-inprocess
 
 プロセス内のファジング。種の入力を変異させて対象に渡し、新しいコードに届いた入力を残してさらに変異させる。見つけた入力は最小化する。
 
@@ -25,5 +25,7 @@ for finding in report.findings: echo finding.kind, " ", finding.reason, " ", fin
 - 長く掘るときは libFuzzer に任せられる。`import fuzz/libfuzzer` して `libFuzzerTarget(target)` と書き、libFuzzer の実行時ライブラリを持つ clang (macOS では Homebrew の LLVM) で、`--noMain --panics:on -d:useMalloc -d:noSignalHandler --passC:-fsanitize=fuzzer,address --passL:-fsanitize=fuzzer,address` を付けてビルドする。判定は `fuzz` と同じ (理由・例外・Defect が発見)。手順は `src/fuzz/libfuzzer.nim` の冒頭。
 
 最初の成果: nim-x402 のヘッダーの読み取りが、4 バイトの入力で `IndexDefect` を上げた (標準ライブラリの `base64.decode` の、Nim 2.2.8 までの問題。nim-lang/Nim#25530、2.2.10 で修正済み)。
+
+nimble のパッケージ名は `nim_fuzz_inprocess`、import する名前は `fuzz`。`nim_fuzz` は、nimble が `_` を無視して比べるため公式一覧の `nimfuzz` と同じ名前になり、依存として解決できなかった。
 
 仕様と、守れないものは `docs/adr/ADR-FZZ-0001-in-process-fuzzing.md`。

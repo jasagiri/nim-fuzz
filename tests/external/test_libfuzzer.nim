@@ -44,7 +44,7 @@ suite "the libFuzzer entrance":
     # SPEC: LFZ-01
     let (output, code) = runOn(verdicts, "REASON here")
     check code != 0
-    check "nim-fuzz finding: accepted what it must refuse" in output
+    check "nim-fuzz-inprocess finding: accepted what it must refuse" in output
 
   test "Given a target that raises, When libFuzzer runs that input, Then it is a finding naming the exception":
     # SPEC: LFZ-02
