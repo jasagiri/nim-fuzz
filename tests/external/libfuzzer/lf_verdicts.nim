@@ -1,7 +1,7 @@
 ## A libFuzzer program for test_libfuzzer.nim: each kind of finding, by the
 ## input's first word.
 import std/strutils
-import fuzz/libfuzzer
+import nim_fuzz_inprocess/libfuzzer
 
 proc target(input: string): string {.raises: [CatchableError].} =
   if input.startsWith("REASON"): return "accepted what it must refuse"

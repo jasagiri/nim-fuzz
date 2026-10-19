@@ -80,7 +80,7 @@
 
 ### libFuzzer の入口 (2026-10-18 に追加)
 
-長く掘るときは、エンジンを libFuzzer に任せる。`fuzz/libfuzzer` の `libFuzzerTarget(target)` が、同じ対象に libFuzzer の入口を与える。変異とコーパスは libFuzzer が持ち、AddressSanitizer と組み合わせられる。
+長く掘るときは、エンジンを libFuzzer に任せる。`nim_fuzz_inprocess/libfuzzer` の `libFuzzerTarget(target)` が、同じ対象に libFuzzer の入口を与える。変異とコーパスは libFuzzer が持ち、AddressSanitizer と組み合わせられる。
 
 この機体の Homebrew の LLVM 23 には libFuzzer の実行時ライブラリがあり、動くことを 2026-10-18 に確かめた (2026-10-07 の時点では動かなかった)。Apple の clang には無い。
 

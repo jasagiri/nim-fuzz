@@ -2,7 +2,7 @@
 ## without the coverage signal and with it (-d:fuzzCoverage).
 
 import std/[unittest, os, strutils, sequtils, algorithm]
-import fuzz
+import nim_fuzz_inprocess
 
 proc quiet(input: string): string {.raises: [CatchableError].} = ""
 

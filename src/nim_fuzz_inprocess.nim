@@ -18,7 +18,7 @@ import std/[random, monotimes, times, os, hashes, strutils, sets, osproc, strtab
 
 when defined(fuzzCoverage):
   {.passC: "-fsanitize-coverage=trace-pc-guard".}
-  const covrtPath = currentSourcePath().parentDir / "fuzz" / "covrt.c"
+  const covrtPath = currentSourcePath().parentDir / "nim_fuzz_inprocess" / "covrt.c"
   {.compile(covrtPath, "-fno-sanitize-coverage=trace-pc-guard").}
   proc fuzzFreshEdges(): uint64 {.importc: "fuzz_fresh_edges", cdecl.}
   proc fuzzResetEdges() {.importc: "fuzz_reset_edges", cdecl.}

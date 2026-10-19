@@ -1,7 +1,7 @@
 ## libFuzzer as the engine for a nim-fuzz-inprocess target (ADR-FZZ-0001, LFZ).
 ##
 ## ```nim
-## import fuzz/libfuzzer
+## import nim_fuzz_inprocess/libfuzzer
 ## proc target(input: string): string {.raises: [CatchableError].} = ...
 ## libFuzzerTarget(target)
 ## ```
@@ -26,7 +26,7 @@ when not defined(noSignalHandler):
            "libFuzzer's, and it would not save the input that crashed".}
 
 import std/posix
-import ../fuzz
+import ../nim_fuzz_inprocess
 
 proc abort() {.importc, header: "<stdlib.h>", noreturn.}
 

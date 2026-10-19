@@ -4,7 +4,7 @@
 import std/[unittest, os, strutils, sequtils]
 from std/posix import kill, getpid, exitnow, SIGTERM, SIGHUP, RLimit, getrlimit, setrlimit, RLIMIT_NOFILE
 from std/posix import nil
-import fuzz
+import nim_fuzz_inprocess
 
 proc clean(input: string): string {.raises: [CatchableError].} = ""
 

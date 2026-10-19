@@ -1,7 +1,7 @@
 ## A libFuzzer program for test_libfuzzer.nim: the target reads a global that
 ## the module's initialization fills.
 import std/tables
-import fuzz/libfuzzer
+import nim_fuzz_inprocess/libfuzzer
 
 let known = {"a": 1, "b": 2}.toTable
 
